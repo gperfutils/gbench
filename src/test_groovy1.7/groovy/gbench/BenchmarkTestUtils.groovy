@@ -1,7 +1,7 @@
 package gbench
 
 class BenchmarkTestUtils {
-
+    
     static def callAndGetStdout(expression) {
         def stdout = System.out;
         def baos = new ByteArrayOutputStream()
@@ -21,7 +21,7 @@ class BenchmarkTestUtils {
     }
     
     static def defaultAssert(actual) {
-        if (System.getProperty("gbench.da")) {
+        if (System.getProperty("gbench.da") == null) {
             assert actual.matches('gbench\\..+ java\\.lang\\.Object [a-zA-Z0-9]+\\(.*\\): [0-9]+ ns')    
         }
         System.out.println(actual)
@@ -33,5 +33,4 @@ class BenchmarkTestUtils {
         }
         System.out.println(actual)
     }
-    
 }

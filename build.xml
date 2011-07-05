@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="groovybenchmark" default="build">
+  <target name="init">
+    <property environment="env" />
+    <condition property="GROOVY_HOME" value="${env.GROOVY_HOME}">
+      <not><isset property="groovy"/></not>
+    </condition>
+    <condition property="GROOVY_HOME" value="${env.GROOVY17_HOME}">
+      <equals arg1="${groovy}" arg2="1.7" />
+    </condition>
+    <path id="groovy.classpath">
+      <fileset 
+        dir="${GROOVY_HOME}" 
+        includes="embeddable/*,lib/*" 
+      />
+    </path>
+    <taskdef 
+      name="groovy" 
+      classname="org.codehaus.groovy.ant.Groovy"
+      classpathref="groovy.classpath"
+    />
+    <tstamp>
+      <format property="version" pattern="yy.MM.dd" />
+    </tstamp>
+    <property name="srcdir" value="src/main" />
+    <property name="bindir" value="bin" />
+    <property name="distdir" value="dist" />
+    <property name="jarfile" value="${distdir}/gbench-${version}.jar" />  
+    <property name="srcfile" value="${distdir}/gbench-src-${version}.zip" />  
+    <condition property="testdir" value="src/test">
+      <not><isset property="groovy" /></not>
+    </condition>
+    <condition property="testdir" value="src/test_groovy1.7">
+      <equals arg1="${groovy}" arg2="1.7" />
+    </condition>
+    <property name="testbindir" value="testbin" />
+    <echo>----</echo>
+    <echo>GROOVY_HOME: ${GROOVY_HOME}</echo>
+    <echo>version: ${version}</echo>
+    <echo>----</echo>
+  </target>
+  <target name="build" depends="init">
+    <echo>compiling...</echo>
+    <delete dir="${bindir}" />
+    <mkdir dir="${bindir}" />
+  	<taskdef name="groovyc"
+      classname="org.codehaus.groovy.ant.Groovyc"
+      classpathref="groovy.classpath"/>  	
+    <groovyc 
+      srcdir="${srcdir}" 
+      destdir="${bindir}"
+      classpathref="groovy.classpath">
+      <javac source="1.5" target="1.5" debug="on" />	
+    </groovyc>
+    <echo>done</echo>
+    <echo>making a jar file...</echo>
+    <jar
+      basedir="${bindir}"
+      destfile="${jarfile}" 
+      includes="**/*.class"/>
+    <echo>done</echo>
+  </target>
+  <target name="test" depends="init">
+    <echo>testing...</echo>
+    <delete dir="${testbindir}" />
+    <mkdir dir="${testbindir}" />
+    <taskdef name="groovyc"
+      classname="org.codehaus.groovy.ant.Groovyc"
+      classpathref="groovy.classpath"/>
+    <groovyc srcdir="${testdir}" destdir="${testbindir}">
+      <classpath>
+        <fileset dir="" includes="${jarfile}" />
+      </classpath>
+    </groovyc>
+    <java
+	    classname="gbench.BenchmarkTest"
+	    classpathref="groovy.classpath">
+      <classpath>
+        <pathelement location="${testbindir}" />
+        <fileset dir="" includes="${jarfile}" />
+      </classpath>
+		<syspropertyset>
+	    <propertyref prefix="groovybenchmark"/>
+		</syspropertyset>
+	</java>
+    <echo>done</echo>
+  </target>
+	<target name="dist" depends="build">
+		<echo>creating source archive...</echo>
+		<zip destfile="${srcfile}">
+	    <fileset dir="src" includes="main/groovy/**/*.groovy,main/java/**/*.java" />
+		</zip>
+	</target>
+</project>
