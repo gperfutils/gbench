@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gbench;
+package gbench
 
 import java.lang.management.ManagementFactory
 
@@ -42,8 +42,8 @@ import java.lang.management.ManagementFactory
  *         }
  *         sb.toString()
  *     }
- *     with 'join', { 
- *         chars.join() 
+ *     with 'join', {
+ *         chars.join()
  *     }
  * }).sort().prettyPrint()
  * <code></pre>
@@ -56,33 +56,33 @@ import java.lang.management.ManagementFactory
  * +=              62400400    15600100    78000500    121649445
  * concat          46800300    31200200    78000500    129421409
  * </pre>
- * 
+ *
  * @author Nagai Masato
  *
  */
 class BenchmarkBuilder {
-    
+
     static class Benchmarks extends ArrayList {
-        
+
         def sort() {
-            return sort {lhs, rhs -> lhs.time.real <=> rhs.time.real }
+            return sort{ it.time.real }
         }
-        
+
         @Override
         String prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
-            def wids = 
+            def wids =
                 inject([
-                    label: 1, 
-                    user: 'user'.length(), 
-                    system: 'system'.length(), 
-                    cpu: 'cpu'.length(),
-                    real: 'real'.length()
-                ]) { wids, bm -> 
-                    wids.label = Math.max(wids.label, bm.label.length()) 
-                    wids.user = Math.max(wids.user, bm.time.user.toString().length())
-                    wids.system = Math.max(wids.system, bm.time.system.toString().length())
-                    wids.cpu = Math.max(wids.cpu, bm.time.cpu.toString().length())
-                    wids.real = Math.max(wids.real, bm.time.real.toString().length())
+                    label: 1,
+                    user: 'user'.size(),
+                    system: 'system'.size(),
+                    cpu: 'cpu'.size(),
+                    real: 'real'.size()
+                ]) { wids, bm ->
+                    wids.label = Math.max(wids.label, bm.label.size())
+                    wids.user = Math.max(wids.user, bm.time.user.toString().size())
+                    wids.system = Math.max(wids.system, bm.time.system.toString().size())
+                    wids.cpu = Math.max(wids.cpu, bm.time.cpu.toString().size())
+                    wids.real = Math.max(wids.real, bm.time.real.toString().size())
                     wids
                 }
             writer.printf(
@@ -101,31 +101,44 @@ class BenchmarkBuilder {
             writer.flush()
         }
     }
-    
+
     Benchmarks benchmarks
     int times
-    
+    int idling
+    boolean average
+    boolean trim // remove highest and lowest measurements
+
     Benchmarks run(Map args=[:], Closure clos) {
         benchmarks = []
-        this.times = args.times ? args.times : 1    
+        this.times = args.times ?: 1
+        this.idling = args.idling ?: 1
+        this.average = args.average ?: false
+        if (args.trim) {
+            this.trim = true
+            if (args.times < 3) {
+                // cannot trim in case of lack of times
+                this.trim = false
+            }
+        }
         clos.delegate = this
         clos()
         return benchmarks
     }
-   
+
     def with(String label, Closure clos) {
-        measure(1, clos) // avoid large overhead of the first closure call
+        measure(idling, clos) // reduce or avoid overhead for calling closure
         def benchmark = [label: label, time: measure(times, clos)]
         benchmarks << benchmark
     }
-    
+
     private BenchmarkTime measure(times, Closure clos) {
-        def mxBean = ManagementFactory.threadMXBean;
+        def reals = []
+        def cpus = []
+        def systems = []
+        def users = []
+        def mxBean = ManagementFactory.threadMXBean
         def cpuTimeSupported = mxBean.isCurrentThreadCpuTimeSupported()
-        def real = 0
-        def cpu = 0
-        def user = 0 
-        for (i in 0..<times) {
+        times.times {
             def bReal = System.nanoTime()
             def bCpu
             def bUser
@@ -135,14 +148,30 @@ class BenchmarkBuilder {
             }
             clos()
             if (cpuTimeSupported) {
-                user += mxBean.currentThreadUserTime - bUser
-                cpu += mxBean.currentThreadCpuTime - bCpu
+                def user = mxBean.currentThreadUserTime - bUser
+                def cpu = mxBean.currentThreadCpuTime - bCpu
+                users << user
+                cpus << cpu
+                systems << cpu - user
             }
-            real += System.nanoTime() - bReal
+            reals << System.nanoTime() - bReal
+        }
+        def calc = { list ->
+            if (trim) {
+                list -= list.max()
+                list -= list.min()
+            }
+            def total = list.sum()?: 0
+            if (average) {
+                return total / list.size()
+            }
+            return total
         }
         return new BenchmarkTime(
-                    real : real, cpu: cpu, system: cpu - user, user: user
-                )
+            real :  calc(reals),
+            cpu:    calc(cpus),
+            system: calc(systems),
+            user:   calc(users),
+        )
     }
 }
-
