@@ -15,45 +15,46 @@
  */
 package gbench;
 
+import java.lang.management.ManagementFactory
+
 /**
  * <p>A builder for benchmarking.</p>
  * <p>For example, you can benchmark character concatenation like the following:</p>
  * <pre><code>
- * def chars = ['g', 'r', 'o', 'o', 'v', 'y']
- * def benchmark = new BenchmarkBuilder()
- * benchmark.run times: 1000, {
- *     with 'concat', { 
+ * new BenchmarkBuilder().run(times: 1000, {
+ *     def chars = ['g', 'r', 'o', 'o', 'v', 'y']
+ *     with 'concat', {
  *         def s = ''
- *         for (c in chars) {
- *             s.concat c    
+ *         for(c in chars){
+ *             s.concat c
  *         }
  *     }
- *     with '+=', { 
- *         def s = ''
- *         for (c in chars) {
- *             s += c    
+ *     with '+=', {
+ *         def s= ''
+ *         for(c in chars){
+ *             s += c
  *         }
  *     }
- *     with 'string builder', {
- *         def sb = new StringBuilder()    
- *         for (c in chars) {
- *             sb << c    
+ *     with 'stringbuilder',{
+ *         def sb = new StringBuilder()
+ *         for(c in chars){
+ *             sb << c
  *         }
- *         sb.toString() 
+ *         sb.toString()
  *     }
- *     with 'join', {
- *         chars.join()
+ *     with 'join', { 
+ *         chars.join() 
  *     }
- *  }
- *  println benchmark.sort()
+ * }).sort().prettyPrint()
  * <code></pre>
  * then output will be like:
  * <pre>
- *                     time
- * join             5000000
- * string builder   7500000
- * +=              10000000
- * concat          12500000
+ *                  user    system       cpu        real
+ *
+ * join            15600100         0  15600100    11799977
+ * stringbuilder   15600100         0  15600100    16124097
+ * +=              15600100         0  15600100    23323655
+ * concat          15600100         0  15600100    37513352
  * </pre>
  * 
  * @author Nagai Masato
@@ -61,60 +62,87 @@ package gbench;
  */
 class BenchmarkBuilder {
     
-    private def benchmarks
-    private int times
+    static class Benchmarks extends ArrayList {
+        
+        def sort() {
+            return sort {lhs, rhs -> lhs.time.real <=> rhs.time.real }
+        }
+        
+        @Override
+        String prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
+            def wids = 
+                inject([
+                    label: 1, 
+                    user: 'user'.length(), 
+                    system: 'system'.length(), 
+                    cpu: 'cpu'.length(),
+                    real: 'real'.length()
+                ]) { wids, bm -> 
+                    wids.label = Math.max(wids.label, bm.label.length()) 
+                    wids.user = Math.max(wids.user, bm.time.user.toString().length())
+                    wids.system = Math.max(wids.system, bm.time.system.toString().length())
+                    wids.cpu = Math.max(wids.cpu, bm.time.cpu.toString().length())
+                    wids.real = Math.max(wids.real, bm.time.real.toString().length())
+                    wids
+                }
+            writer.printf(
+                "%${wids.label}s\t%${wids.user}s\t%${wids.system}s\t%${wids.cpu}s\t%${wids.real}s",
+                ' ', 'user', 'system', 'cpu', 'real'
+            )
+            writer.println()
+            each { bm ->
+                writer.println()
+                writer.printf(
+                    "%-${wids.label}s\t%${wids.user}d\t%${wids.system}d\t%${wids.cpu}d\t%${wids.real}d",
+                    bm.label, bm.time.user, bm.time.system, bm.time.cpu, bm.time.real
+                )
+            }
+            writer.println()
+            writer.flush()
+        }
+    }
     
-    def run(Map args=[:], Closure clos) {
+    Benchmarks benchmarks
+    int times
+    
+    Benchmarks run(Map args=[:], Closure clos) {
         benchmarks = []
         this.times = args.times ? args.times : 1    
         clos.delegate = this
         clos()
-        return this
+        return benchmarks
     }
    
     def with(String label, Closure clos) {
         measure(1, clos) // avoid large overhead of the first closure call
         def benchmark = [label: label, time: measure(times, clos)]
         benchmarks << benchmark
-        return this
     }
     
-    def each(Closure clos) {
-        benchmarks.each(clos)
-        return this
-    }
-    
-    def sort(Closure clos = { lhs, rhs -> lhs.time <=> rhs.time }) {
-        benchmarks.sort(clos)    
-        return this
-    }
-    
-    @Override
-    String toString() {
-        def wtable = benchmarks.inject([label:1, time: 'time'.length()]) { wtable, bm -> 
-            wtable.label = Math.max(wtable.label, bm.label.length()) 
-            wtable.time = Math.max(wtable.time, bm.time.toString().length())
-            wtable
-        }
-        def nl = System.getProperty('line.separator')
-        def sb = new StringBuilder()
-        sb << String.format("%${wtable.label}s\t%${wtable.time}s", ' ', 'time')
-        benchmarks.each { bm ->
-            sb << nl 
-            sb << String.format("%-${wtable.label}s\t%${wtable.time}d", bm.label, bm.time)
-        }
-        return sb.toString()
-    }
-    
-    private def measure(times, Closure clos) {
-        def time = 0
+    private BenchmarkTime measure(times, Closure clos) {
+        def mxBean = ManagementFactory.threadMXBean;
+        def cpuTimeSupported = mxBean.isCurrentThreadCpuTimeSupported()
+        def real = 0
+        def cpu = 0
+        def user = 0 
         for (i in 0..<times) {
-            def b = System.nanoTime()
+            def bReal = System.nanoTime()
+            def bCpu
+            def bUser
+            if (cpuTimeSupported) {
+                bCpu = mxBean.currentThreadCpuTime
+                bUser = mxBean.currentThreadUserTime
+            }
             clos()
-            def a = System.nanoTime()
-            time += a - b
+            if (cpuTimeSupported) {
+                user += mxBean.currentThreadUserTime - bUser
+                cpu += mxBean.currentThreadCpuTime - bCpu
+            }
+            real += System.nanoTime() - bReal
         }
-        return time
+        return new BenchmarkTime(
+                    real : real, cpu: cpu, system: cpu - user, user: user
+                )
     }
 }
 

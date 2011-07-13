@@ -1,10 +1,11 @@
 def project = [
     groupId: "com.google.gbench",
     artifactId: "gbench",
-    version: "11.07.05",
+    version: new Date().format("yy.MM.dd"),
 ]
 
 def srcdir = "src/main"
+def testdir = "src/test"
 def builddir = "build"
 def distdir = "dist"
 def verbose = "false"
@@ -76,6 +77,13 @@ ant.jar(
     destfile: "${distdir}/${project.artifactId}-${project.version}.jar",
     basedir: classesdir,
     update: "true",
+)
+
+ant.echo(message: "Testing...")
+ant.taskdef(name: "groovy", classname: "org.codehaus.groovy.ant.Groovy")
+ant.groovy(
+    src: "${testdir}/gbench/BenchmarkTest.groovy",
+    classpath: "${testdir};${distdir}/${project.artifactId}-${project.version}.jar",
 )
 
 ant.echo(message: "Packaging sources...")
