@@ -21,7 +21,7 @@ import java.lang.management.ManagementFactory
  * <p>A builder for benchmarking.</p>
  * <p>For example, you can benchmark character concatenation like the following:</p>
  * <pre><code>
- * new BenchmarkBuilder().run(times: 1000, {
+ * new BenchmarkBuilder().run(times: 10000, {
  *     def chars = ['g', 'r', 'o', 'o', 'v', 'y']
  *     with 'concat', {
  *         def s = ''
@@ -30,12 +30,12 @@ import java.lang.management.ManagementFactory
  *         }
  *     }
  *     with '+=', {
- *         def s= ''
- *         for(c in chars){
+ *         def s = ''
+ *         for (c in chars) {
  *             s += c
  *         }
  *     }
- *     with 'stringbuilder',{
+ *     with 'stringbuilder', {
  *         def sb = new StringBuilder()
  *         for(c in chars){
  *             sb << c
@@ -49,12 +49,12 @@ import java.lang.management.ManagementFactory
  * <code></pre>
  * then output will be like:
  * <pre>
- *                  user    system       cpu        real
+ *                     user      system         cpu         real
  *
- * join            15600100         0  15600100    11799977
- * stringbuilder   15600100         0  15600100    16124097
- * +=              15600100         0  15600100    23323655
- * concat          15600100         0  15600100    37513352
+ * join            46800300    15600100    62400400     91680789
+ * stringbuilder   62400400    15600100    78000500    101281757
+ * +=              62400400    15600100    78000500    121649445
+ * concat          46800300    31200200    78000500    129421409
  * </pre>
  * 
  * @author Nagai Masato
