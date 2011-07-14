@@ -60,7 +60,6 @@ class BenchmarkBuilderTest {
         assert benchmarker.benchmarks[0].label == ''
     }
     
-    
     def run() {
         testStandard()
         testMultiple()

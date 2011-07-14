@@ -126,7 +126,7 @@ class BenchmarkBuilder {
     }
 
     def with(String label, Closure clos) {
-        measure(idling, clos) // reduce or avoid overhead for calling closure
+        idling.times { clos() } // reduce or avoid overhead for calling closure
         def benchmark = [label: label, time: measure(times, clos)]
         benchmarks << benchmark
     }
@@ -161,7 +161,7 @@ class BenchmarkBuilder {
                 list -= list.max()
                 list -= list.min()
             }
-            def total = list.sum()?: 0
+            def total = list.sum() ?: 0
             if (average) {
                 return total / list.size()
             }
