@@ -135,7 +135,7 @@ class BenchmarkBuilder {
     }
    
     /**
-     * Gets sum of benchmarks, behaves same as <code>run() or run(average: false)</code>
+     * Gets sum of benchmarks. This behaves the same as <code>run() or run(average: false)</code>
      * 
      * @param times times to execute each code block. the default value is <code>1</code>.
      * @param idles times to execute each code block before starting to benchmark to reduce effect of overheads. the default value is <code>1</code>.
@@ -148,18 +148,13 @@ class BenchmarkBuilder {
     }
 
     /**
-     * Gets sum of benchmarks, behaves same as <code>run(average: true)</code>
+     * Gets average of benchmarks. This behaves the same as <code>run(average: true)</code>
      * 
      * @param times times to execute each code block. the default value is <code>1</code>.
      * @param idles times to execute each code block before starting to benchmark to reduce effect of overheads. the default value is <code>1</code>.
      * @param trim if <code>true</code>, removes the highest and the lowest benchmarks. the default value is <code>false</code>.
      * @param clos a closure to add code blocks for benchmarking
      * @return benchmarks
-     */
-    /**
-     * Gets average of benchmarks
-     * @param clos
-     * @return results
      */
     Benchmarks average(Map args=[:], Closure clos) {
         args = new HashMap(args)
