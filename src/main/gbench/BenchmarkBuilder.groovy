@@ -104,14 +104,23 @@ class BenchmarkBuilder {
 
     Benchmarks benchmarks
     int times
-    int idling
+    int idles
     boolean average
-    boolean trim // remove highest and lowest measurements
+    boolean trim
 
+    /**
+     * Gets benchmarks for each code block that is added via <code>with()</code>.
+     * @param average if <code>true</code>, gets average instead of sum. the default value is <code>false</code> (gets sum).
+     * @param times times to execute each code block. the default value is <code>1</code>.
+     * @param idles times to execute each code block before starting to benchmark to reduce effect of overheads. the default value is <code>1</code>.
+     * @param trim if <code>true</code>, removes the highest and the lowest benchmarks. the default value is <code>false</code>.
+     * @param clos a closure to add code blocks for benchmarking
+     * @return benchmarks
+     */
     Benchmarks run(Map args=[:], Closure clos) {
         benchmarks = []
         this.times = args.times ?: 1
-        this.idling = args.idling ?: 1
+        this.idles = args.idles ?: 1
         this.average = args.average ?: false
         if (args.trim) {
             this.trim = true
@@ -124,9 +133,40 @@ class BenchmarkBuilder {
         clos()
         return benchmarks
     }
+   
+    /**
+     * Gets sum of benchmarks, behaves same as <code>run() or run(average: false)</code>
+     * 
+     * @param times times to execute each code block. the default value is <code>1</code>.
+     * @param idles times to execute each code block before starting to benchmark to reduce effect of overheads. the default value is <code>1</code>.
+     * @param trim if <code>true</code>, removes the highest and the lowest benchmarks. the default value is <code>false</code>.
+     * @param clos a closure to add code blocks for benchmarking
+     * @return benchmarks
+     */
+    Benchmarks sum(Map args=[:], Closure clos) {
+        run(args, clos)    
+    }
 
+    /**
+     * Gets sum of benchmarks, behaves same as <code>run(average: true)</code>
+     * 
+     * @param times times to execute each code block. the default value is <code>1</code>.
+     * @param idles times to execute each code block before starting to benchmark to reduce effect of overheads. the default value is <code>1</code>.
+     * @param trim if <code>true</code>, removes the highest and the lowest benchmarks. the default value is <code>false</code>.
+     * @param clos a closure to add code blocks for benchmarking
+     * @return benchmarks
+     */
+    /**
+     * Gets average of benchmarks
+     * @param clos
+     * @return results
+     */
+    Benchmarks average(Map args=[:], Closure clos) {
+        run(args << [average: true], clos)    
+    }
+    
     def with(String label, Closure clos) {
-        idling.times { clos() } // reduce or avoid overhead for calling closure
+        idles.times { clos() }
         def benchmark = [label: label, time: measure(times, clos)]
         benchmarks << benchmark
     }
@@ -168,10 +208,10 @@ class BenchmarkBuilder {
             return total
         }
         return new BenchmarkTime(
-            real :  calc(reals),
-            cpu:    calc(cpus),
+            real: calc(reals),
+            cpu: calc(cpus),
             system: calc(systems),
-            user:   calc(users),
+            user: calc(users),
         )
     }
 }
