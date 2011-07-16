@@ -162,7 +162,9 @@ class BenchmarkBuilder {
      * @return results
      */
     Benchmarks average(Map args=[:], Closure clos) {
-        run(args << [average: true], clos)    
+        args = new HashMap(args)
+        args.average = true
+        run(args, clos)    
     }
     
     def with(String label, Closure clos) {
