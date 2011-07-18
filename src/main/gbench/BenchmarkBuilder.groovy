@@ -24,26 +24,26 @@ import java.lang.management.ManagementFactory
  * <pre><code>
  * new BenchmarkBuilder().run(times: 10000, {
  *     def chars = ['g', 'r', 'o', 'o', 'v', 'y']
- *     with 'concat', {
+ *     concat {
  *         def s = ''
  *         for(c in chars){
  *             s.concat c
  *         }
  *     }
- *     with '+=', {
+ *     '+=' {
  *         def s = ''
  *         for (c in chars) {
  *             s += c
  *         }
  *     }
- *     with 'stringbuilder', {
+ *     stringbuilder {
  *         def sb = new StringBuilder()
  *         for(c in chars){
  *             sb << c
  *         }
  *         sb.toString()
  *     }
- *     with 'join', {
+ *     join {
  *         chars.join()
  *     }
  * }).sort().prettyPrint()
@@ -117,8 +117,7 @@ class BenchmarkBuilder {
     boolean trim
 
     /**
-     * Gets benchmarks for each code block that is added via 
-     * <code>with()</code>.
+     * Gets benchmarks.
      * 
      * @param options
      * <ul>
@@ -199,6 +198,9 @@ class BenchmarkBuilder {
     /**
      * Adds a code block as a benchmark target.
      * 
+     * @deprecated Use the following alternate syntax instead: 
+     *               <code>label { code }</code>
+     *               
      * @param label the label of the code block.
      * @param clos a code block.
      */
@@ -207,7 +209,13 @@ class BenchmarkBuilder {
         def benchmark = [label: label, time: measure(times, clos)]
         benchmarks << benchmark
     }
-
+   
+    def invokeMethod(String name, Object args) {
+        if (args && args.size() == 1) {
+            with(name, args[0])
+        }
+    }
+    
     private BenchmarkTime measure(times, Closure clos) {
         def reals = []
         def cpus = []

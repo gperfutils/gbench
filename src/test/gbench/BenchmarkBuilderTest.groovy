@@ -12,7 +12,7 @@ class BenchmarkBuilderTest {
     def testStandard() {
         def benchmarker = new BenchmarkBuilder()    
         benchmarker.run {
-            with 'foo', {
+            foo {
                 // gain user-time
                 def sum = 0
                 (0..100000).each {
@@ -39,10 +39,10 @@ class BenchmarkBuilderTest {
     def testMultiple() {
         def benchmarker = new BenchmarkBuilder()
         benchmarker.run {
-            with 'foo', {
+            foo {
                 Thread.sleep(100)
             }    
-            with 'bar', {
+            bar {
                 Thread.sleep(50)
             }
         }
@@ -51,19 +51,9 @@ class BenchmarkBuilderTest {
         assert benchmarker.benchmarks*.label == ['bar', 'foo']
     }
     
-    def testUnlabeled() {
-        def benchmarker = new BenchmarkBuilder()
-        benchmarker.run {
-            with '', {
-            }
-        }
-        assert benchmarker.benchmarks[0].label == ''
-    }
-    
     def run() {
         testStandard()
         testMultiple()
-        testUnlabeled()
     }
     
     static void main(args) {
