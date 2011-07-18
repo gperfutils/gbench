@@ -19,7 +19,8 @@ import java.lang.management.ManagementFactory
 
 /**
  * <p>A builder for benchmarking.</p>
- * <p>For example, you can benchmark character concatenation like the following:</p>
+ * <p>For example, you can benchmark character concatenation like the 
+ * following:</p>
  * <pre><code>
  * new BenchmarkBuilder().run(times: 10000, {
  *     def chars = ['g', 'r', 'o', 'o', 'v', 'y']
@@ -68,8 +69,12 @@ class BenchmarkBuilder {
             return sort{ it.time.real }
         }
 
-        @Override
-        String prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
+        /**
+         * Pretty-prints the benchmarks.
+         * 
+         * @param writer a print writer.
+         */
+        def prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
             def wids =
                 inject([
                     label: 1,
@@ -79,10 +84,13 @@ class BenchmarkBuilder {
                     real: 'real'.size()
                 ]) { wids, bm ->
                     wids.label = Math.max(wids.label, bm.label.size())
-                    wids.user = Math.max(wids.user, bm.time.user.toString().size())
-                    wids.system = Math.max(wids.system, bm.time.system.toString().size())
+                    wids.user = 
+                        Math.max(wids.user, bm.time.user.toString().size())
+                    wids.system = 
+                        Math.max(wids.system, bm.time.system.toString().size())
                     wids.cpu = Math.max(wids.cpu, bm.time.cpu.toString().size())
-                    wids.real = Math.max(wids.real, bm.time.real.toString().size())
+                    wids.real = 
+                        Math.max(wids.real, bm.time.real.toString().size())
                     wids
                 }
             writer.printf(
@@ -109,22 +117,32 @@ class BenchmarkBuilder {
     boolean trim
 
     /**
-     * Gets benchmarks for each code block that is added via <code>with()</code>.
-     * @param average if <code>true</code>, gets average instead of sum. the default value is <code>false</code> (gets sum).
-     * @param times times to execute each code block. the default value is <code>1</code>.
-     * @param idles times to execute each code block before starting to benchmark to reduce effect of overheads. the default value is <code>1</code>.
-     * @param trim if <code>true</code>, removes the highest and the lowest benchmarks. the default value is <code>false</code>.
-     * @param clos a closure to add code blocks for benchmarking
+     * Gets benchmarks for each code block that is added via 
+     * <code>with()</code>.
+     * 
+     * @param options
+     * <ul>
+     * <li>average: if <code>true</code>, gets average instead of sum. the 
+     *              default value is <code>false</code> (gets sum).</li>
+     * <li>times:   times to execute each code block. the default value is 
+     *              <code>1</code>.</li>
+     * <li>idles:   times to execute each code block before starting to 
+     *              benchmark. This option is useful to reduce effects of 
+     *              overhead. the default value is <code>1</code>.</li>
+     * <li>trim:    if <code>true</code>, removes the highest and the lowest 
+     *              benchmarks. the default value is <code>false</code>.</li>
+     * </ul>
+     * @param clos a closure to add code blocks for benchmarking.
      * @return benchmarks
      */
-    Benchmarks run(Map args=[:], Closure clos) {
+    Benchmarks run(Map options=[:], Closure clos) {
         benchmarks = []
-        this.times = args.times ?: 1
-        this.idles = args.idles ?: 1
-        this.average = args.average ?: false
-        if (args.trim) {
+        this.times = options.times ?: 1
+        this.idles = options.idles ?: 1
+        this.average = options.average ?: false
+        if (options.trim) {
             this.trim = true
-            if (args.times < 3) {
+            if (options.times < 3) {
                 // cannot trim in case of lack of times
                 this.trim = false
             }
@@ -135,33 +153,55 @@ class BenchmarkBuilder {
     }
    
     /**
-     * Gets sum of benchmarks. This behaves the same as <code>run() or run(average: false)</code>
+     * Gets sum of benchmarks. This method behaves the same as 
+     * <code>run() or run(average: false)</code>
      * 
-     * @param times times to execute each code block. the default value is <code>1</code>.
-     * @param idles times to execute each code block before starting to benchmark to reduce effect of overheads. the default value is <code>1</code>.
-     * @param trim if <code>true</code>, removes the highest and the lowest benchmarks. the default value is <code>false</code>.
+     * @param options
+     * <ul>
+     * <li>times:   times to execute each code block. the default value is 
+     *              <code>1</code>.</li>
+     * <li>idles:   times to execute each code block before starting to 
+     *              benchmark. This option is useful to reduce effects of 
+     *              overhead. the default value is <code>1</code>.</li>
+     * <li>trim:    if <code>true</code>, removes the highest and the lowest 
+     *              benchmarks. the default value is <code>false</code>.</li>
+     * </ul>
      * @param clos a closure to add code blocks for benchmarking
      * @return benchmarks
      */
-    Benchmarks sum(Map args=[:], Closure clos) {
-        run(args, clos)    
+    Benchmarks sum(Map options=[:], Closure clos) {
+        run(options, clos)    
     }
 
     /**
-     * Gets average of benchmarks. This behaves the same as <code>run(average: true)</code>
+     * Gets average of benchmarks. This method behaves the same as 
+     * <code>run(average: true)</code>
      * 
-     * @param times times to execute each code block. the default value is <code>1</code>.
-     * @param idles times to execute each code block before starting to benchmark to reduce effect of overheads. the default value is <code>1</code>.
-     * @param trim if <code>true</code>, removes the highest and the lowest benchmarks. the default value is <code>false</code>.
+     * @param options
+     * <ul>
+     * <li>times:   times to execute each code block. the default value is 
+     *              <code>1</code>.</li>
+     * <li>idles:   times to execute each code block before starting to 
+     *              benchmark. This option is useful to reduce effects of 
+     *              overhead. the default value is <code>1</code>.</li>
+     * <li>trim:    if <code>true</code>, removes the highest and the lowest 
+     *              benchmarks. the default value is <code>false</code>.</li>
+     * </ul>
      * @param clos a closure to add code blocks for benchmarking
      * @return benchmarks
      */
-    Benchmarks average(Map args=[:], Closure clos) {
-        args = new HashMap(args)
-        args.average = true
-        run(args, clos)    
+    Benchmarks average(Map options=[:], Closure clos) {
+        options = new HashMap(options)
+        options.average = true
+        run(options, clos)    
     }
     
+    /**
+     * Adds a code block as a benchmark target.
+     * 
+     * @param label the label of the code block.
+     * @param clos a code block.
+     */
     def with(String label, Closure clos) {
         idles.times { clos() }
         def benchmark = [label: label, time: measure(times, clos)]

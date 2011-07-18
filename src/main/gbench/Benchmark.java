@@ -25,35 +25,39 @@ import java.lang.annotation.Target;
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
 /**
- * An annotation to measure execution time of methods. You can add it to methods or classes.
- * 
- * <pre>
- * package foo
- * 
- * class Foo {
+ * An annotation to benchmark methods.
+ * <p> 
+ * This annotation allows you to benchmark methods without modifying their 
+ * existing code. It can be added to  methods or classes.
+ * <pre><code>
+ * class Klass {
  *     {@code @Benchmark}
  *     def foo() {
  *     }
- * }
- * </pre>
- * <pre>
- * package foo
- * 
- * {@code Benchmark}
- * class Foo {
- *     def foo() {
+ *     {@code @Benchmark}
+ *     def bar() {
  *     }
  * }
- * </pre>
  * 
- * Then the ouputs of both will be:
- * <pre> 
- * foo.Foo java.lang.Object foo(): xxx ns
- * </pre>
+ * {@code @Benchmark}
+ * class Klass {
+ *     def foo() {
+ *     }
+ *     def bar() {
+ *     }
+ * }
+ * </code></pre>
  * 
- * You can customize handling of benchmark results by using handler classes that implement
- * BenchmarkHandler interface. Handler classes must have two methods, handle() and getInstance():
- * <pre>
+ * The ouputs of both examples will be:
+ * <pre><code>
+ * Klass java.lang.Object foo(): xxx ns
+ * Klass java.lang.Object bar(): xxx ns
+ * </code></pre>
+ * 
+ * The handling of benchmark results can be customized by using handler classes 
+ * that implement BenchmarkHandler interface. Handler classes must have two 
+ * methods, handle() and getInstance():
+ * <pre><code>
  * class MyHandler implements Benchmark.BenchmarkHandler {
  *     static def instance = new MyHandler()
  *         void handle(klass method, time) {
@@ -63,29 +67,30 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  *         instance
  *     } 
  * }
- * </pre>
- * <pre>
- * {@code @Benchmark(MyHandler.class)}
+ * 
+ * {@code @Benchmark}(MyHandler.class)
  * def foo() {
  * }
- * </pre>
+ * </code></pre>
  * 
- * Since Groovy 1.8, you can also use closures instead of handler classes. With closures, you just need to assign closures that handle benchmark results:
- * <pre>
- * {@code @Benchmark({println("${method} of ${class}: ${(time/1000000) as long} ms")})}
+ * Since Groovy 1.8, closures can be used instead of handler classes. With
+ * closures, you just need to assign closures that handle benchmark results:
+ * <pre><code>
+ * {@code @Benchmark}({println("${method} of ${class}: ${(time/1000000) as long} ms")})
  * def foo() {
  * }
- * </pre>
+ * </code></pre>
  * 
- * And you can replace the default handling operation with a system property, "groovybenchmark.sf.net.defaulthandle":
- * <pre> 
+ * also the default handling operation can be replaced with a system property, 
+ * "groovybenchmark.sf.net.defaulthandle":
+ * <pre><code>
  * groovy -cp groovybenchmark-xx.xx.xx.jar -Dgroovybenchmark.sf.net.defaulthandle="println(method + ' of ' + klass + ': ' + ((time/1000000) as long) + ' ms')" foo\Foo.groovy
- * </pre>
+ * </code></pre>
  * 
- * Then the ouputs of them will be:
- * <pre>
+ * Then the ouputs of both examples will be:
+ * <pre><code>
  * java.lang.Object foo() of foo.Foo: xxx ms
- * </pre>
+ * </code></pre>
  * 
  * @author Nagai Masato
  */
@@ -97,11 +102,13 @@ public @interface Benchmark {
         public void handle(Object klass, Object method, Object time);
     }
     static class DefaultBenchmarkHandler implements BenchmarkHandler {
-        static final DefaultBenchmarkHandler instance = new DefaultBenchmarkHandler();
+        static final DefaultBenchmarkHandler instance = 
+            new DefaultBenchmarkHandler();
         GroovyShell shell;
         String handle;
         DefaultBenchmarkHandler() {
-            String handle = System.getProperty("groovybenchmark.sf.net.defaulthandle");
+            String handle = 
+                System.getProperty("groovybenchmark.sf.net.defaulthandle");
             if (handle != null) {
                 this.handle = handle;
                 shell = new GroovyShell();
