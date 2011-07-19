@@ -18,11 +18,12 @@ package gbench
 import java.lang.management.ManagementFactory
 
 /**
- * <p>A builder for benchmarking.</p>
+ * A builder for benchmarking.
  * <p>For example, you can benchmark character concatenation like the 
  * following:</p>
  * <pre><code>
- * new BenchmarkBuilder().run(times: 10000, {
+ * def benchmarker = new BenchmarkBuilder()
+ * def benchmarks = benchmarker.run repeat: 10000, {
  *     def chars = ['g', 'r', 'o', 'o', 'v', 'y']
  *     concat {
  *         def s = ''
@@ -46,7 +47,8 @@ import java.lang.management.ManagementFactory
  *     join {
  *         chars.join()
  *     }
- * }).sort().prettyPrint()
+ * }
+ * benchmarks.sort().prettyPrint()
  * <code></pre>
  * then output will be like:
  * <pre>
@@ -63,56 +65,9 @@ import java.lang.management.ManagementFactory
  */
 class BenchmarkBuilder {
 
-    static class Benchmarks extends ArrayList {
-
-        def sort() {
-            return sort{ it.time.real }
-        }
-
-        /**
-         * Pretty-prints the benchmarks.
-         * 
-         * @param writer a print writer.
-         */
-        def prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
-            def wids =
-                inject([
-                    label: 1,
-                    user: 'user'.size(),
-                    system: 'system'.size(),
-                    cpu: 'cpu'.size(),
-                    real: 'real'.size()
-                ]) { wids, bm ->
-                    wids.label = Math.max(wids.label, bm.label.size())
-                    wids.user = 
-                        Math.max(wids.user, bm.time.user.toString().size())
-                    wids.system = 
-                        Math.max(wids.system, bm.time.system.toString().size())
-                    wids.cpu = Math.max(wids.cpu, bm.time.cpu.toString().size())
-                    wids.real = 
-                        Math.max(wids.real, bm.time.real.toString().size())
-                    wids
-                }
-            writer.printf(
-                "%${wids.label}s\t%${wids.user}s\t%${wids.system}s\t%${wids.cpu}s\t%${wids.real}s",
-                ' ', 'user', 'system', 'cpu', 'real'
-            )
-            writer.println()
-            each { bm ->
-                writer.println()
-                writer.printf(
-                    "%-${wids.label}s\t%${wids.user}d\t%${wids.system}d\t%${wids.cpu}d\t%${wids.real}d",
-                    bm.label, bm.time.user, bm.time.system, bm.time.cpu, bm.time.real
-                )
-            }
-            writer.println()
-            writer.flush()
-        }
-    }
-
     Benchmarks benchmarks
-    int times
-    int idles
+    int repeat
+    int idle
     boolean average
     boolean trim
 
@@ -123,27 +78,28 @@ class BenchmarkBuilder {
      * <ul>
      * <li>average: if <code>true</code>, gets average instead of sum. the 
      *              default value is <code>false</code> (gets sum).</li>
-     * <li>times:   times to execute each code block. the default value is 
+     * <li>repeat:  times to execute each code block. the default value is 
      *              <code>1</code>.</li>
-     * <li>idles:   times to execute each code block before starting to 
+     * <li>idle:    times to execute each code block before starting to 
      *              benchmark. This option is useful to reduce effects of 
      *              overhead. the default value is <code>1</code>.</li>
      * <li>trim:    if <code>true</code>, removes the highest and the lowest 
      *              benchmarks. the default value is <code>false</code>.</li>
      * </ul>
      * @param clos a closure to add code blocks for benchmarking.
-     * @return benchmarks
+     * @return a list of benchmarks
      */
-    Benchmarks run(Map options=[:], Closure clos) {
-        benchmarks = []
-        this.times = options.times ?: 1
-        this.idles = options.idles ?: 1
-        this.average = options.average ?: false
+    def run(Map options=[:], Closure clos) {
+        benchmarks = new Benchmarks()
+        repeat = options.times ?: /* for backward compatibility */  
+                    options.repeat ?: 1
+        idle = options.idle ?: 1
+        average = options.average ?: false
         if (options.trim) {
-            this.trim = true
-            if (options.times < 3) {
+            trim = true
+            if (repeat < 3) {
                 // cannot trim in case of lack of times
-                this.trim = false
+                trim = false
             }
         }
         clos.delegate = this
@@ -157,19 +113,20 @@ class BenchmarkBuilder {
      * 
      * @param options
      * <ul>
-     * <li>times:   times to execute each code block. the default value is 
+     * <li>repeat:  times to execute each code block. the default value is 
      *              <code>1</code>.</li>
-     * <li>idles:   times to execute each code block before starting to 
+     * <li>idle:    times to execute each code block before starting to 
      *              benchmark. This option is useful to reduce effects of 
      *              overhead. the default value is <code>1</code>.</li>
      * <li>trim:    if <code>true</code>, removes the highest and the lowest 
      *              benchmarks. the default value is <code>false</code>.</li>
      * </ul>
      * @param clos a closure to add code blocks for benchmarking
-     * @return benchmarks
+     * @return a list of benchmarks
      */
-    Benchmarks sum(Map options=[:], Closure clos) {
+    def sum(Map options=[:], Closure clos) {
         run(options, clos)    
+        return benchmarks
     }
 
     /**
@@ -178,21 +135,22 @@ class BenchmarkBuilder {
      * 
      * @param options
      * <ul>
-     * <li>times:   times to execute each code block. the default value is 
+     * <li>repeat:  times to execute each code block. the default value is 
      *              <code>1</code>.</li>
-     * <li>idles:   times to execute each code block before starting to 
+     * <li>idle:    times to execute each code block before starting to 
      *              benchmark. This option is useful to reduce effects of 
      *              overhead. the default value is <code>1</code>.</li>
      * <li>trim:    if <code>true</code>, removes the highest and the lowest 
      *              benchmarks. the default value is <code>false</code>.</li>
      * </ul>
      * @param clos a closure to add code blocks for benchmarking
-     * @return benchmarks
+     * @return a list of benchmarks
      */
-    Benchmarks average(Map options=[:], Closure clos) {
+    def average(Map options=[:], Closure clos) {
         options = new HashMap(options)
         options.average = true
         run(options, clos)    
+        return benchmarks
     }
     
     /**
@@ -205,10 +163,33 @@ class BenchmarkBuilder {
      * @param clos a code block.
      */
     def with(String label, Closure clos) {
-        idles.times { clos() }
-        def benchmark = [label: label, time: measure(times, clos)]
+        idle.times { clos() }
+        def benchmark = [label: label, time: measure(repeat, clos)]
         benchmarks << benchmark
     }
+    
+    /**
+     * @deprecated Use <code>benchmarks.each{}</code> instead.
+     * @param clos
+     */
+    def each(Closure clos) {
+        benchmarks.each(clos)
+        return this
+    }
+
+    /**
+     * @deprecated Use <code>benchmarks.sort()</code> instead.    
+     */
+    def sort() {
+        benchmarks.sort{ it.time.real }
+        return this
+    }
+    
+    String toString() {
+        def writer = new StringWriter()
+        benchmarks.prettyPrint(new PrintWriter(writer))
+        return writer.toString()
+    } 
    
     def invokeMethod(String name, Object args) {
         if (args && args.size() == 1) {
@@ -216,14 +197,14 @@ class BenchmarkBuilder {
         }
     }
     
-    private BenchmarkTime measure(times, Closure clos) {
+    private BenchmarkTime measure(repeat, Closure clos) {
         def reals = []
         def cpus = []
         def systems = []
         def users = []
         def mxBean = ManagementFactory.threadMXBean
         def cpuTimeSupported = mxBean.isCurrentThreadCpuTimeSupported()
-        times.times {
+        repeat.times {
             def bReal = System.nanoTime()
             def bCpu
             def bUser
@@ -258,5 +239,59 @@ class BenchmarkBuilder {
             system: calc(systems),
             user: calc(users),
         )
+    }
+    
+    static class Benchmarks extends ArrayList {
+        
+        /**
+         * Sorts by real time.
+         * 
+         * @return this
+         */
+        def sort() {
+            return sort {it.time.real}    
+        }    
+        
+        /**
+         * Pretty-prints.
+         * 
+         * @param writer a print writer.
+         */
+        def prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
+            def wids = inject([
+                label: 1,
+                user: 'user'.size(),
+                system: 'system'.size(),
+                cpu: 'cpu'.size(),
+                real: 'real'.size()
+            ]) { wids, bm ->
+                wids.label = Math.max(wids.label, bm.label.size())
+                wids.user = 
+                    Math.max(wids.user, bm.time.user.toString().size())
+                wids.system = 
+                    Math.max(wids.system, bm.time.system.toString().size())
+                wids.cpu = Math.max(wids.cpu, bm.time.cpu.toString().size())
+                wids.real = 
+                    Math.max(wids.real, bm.time.real.toString().size())
+                wids
+            }
+            writer.printf(
+                "%${wids.label}s\t%${wids.user}s\t%${wids.system}s" + 
+                "\t%${wids.cpu}s\t%${wids.real}s",
+                ' ', 'user', 'system', 'cpu', 'real'
+            )
+            writer.println()
+            each { bm ->
+                writer.println()
+                writer.printf(
+                    "%-${wids.label}s\t%${wids.user}d\t%${wids.system}d" + 
+                    "\t%${wids.cpu}d\t%${wids.real}d",
+                    bm.label, bm.time.user, bm.time.system, bm.time.cpu, 
+                    bm.time.real
+                )
+            }
+            writer.println()
+            writer.flush()
+        }
     }
 }

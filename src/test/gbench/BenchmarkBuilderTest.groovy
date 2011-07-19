@@ -11,7 +11,7 @@ class BenchmarkBuilderTest {
     
     def testStandard() {
         def benchmarker = new BenchmarkBuilder()    
-        benchmarker.run {
+        def benchmarks = benchmarker.run {
             foo {
                 // gain user-time
                 def sum = 0
@@ -25,7 +25,8 @@ class BenchmarkBuilderTest {
                     file.list()
                 }
             }    
-        }.each { bm ->
+        }
+        benchmarks.each { bm ->
             assert bm.label == 'foo'   
             assert bm.time.real > 0 
             if (isCpuTimeSupported()) {
@@ -33,12 +34,13 @@ class BenchmarkBuilderTest {
                 assert bm.time.user > 0 
                 assert bm.time.system > 0 
             } 
-        }.prettyPrint()
+        }
+        benchmarks.prettyPrint()
     }
     
     def testMultiple() {
         def benchmarker = new BenchmarkBuilder()
-        benchmarker.run {
+        def benchmarks = benchmarker.run {
             foo {
                 Thread.sleep(100)
             }    
@@ -46,14 +48,37 @@ class BenchmarkBuilderTest {
                 Thread.sleep(50)
             }
         }
-        assert benchmarker.benchmarks*.label == ['foo', 'bar']
-        benchmarker.benchmarks.sort()
-        assert benchmarker.benchmarks*.label == ['bar', 'foo']
+        assert benchmarks*.label == ['foo', 'bar']
+        assert benchmarks.sort()*.label == ['bar', 'foo']
+    }
+    
+    def testPrettyPrint() {
+       def benchmarker = new BenchmarkBuilder() 
+       benchmarker.benchmarks = []
+       benchmarker.benchmarks << [
+               label: 'foo',
+               time: new BenchmarkTime(user:300000, system:200000, cpu:500000, real:1000000)
+           ]
+       benchmarker.benchmarks << [
+               label: 'bar', 
+               time: new BenchmarkTime(user:450000, system:300000, cpu:700000, real:1500000)
+           ]
+       
+       def sw = new StringWriter()
+       def pw = new PrintWriter(sw)
+       pw.println('   \t  user\tsystem\t   cpu\t   real')
+       pw.println()
+       pw.println('foo\t300000\t200000\t500000\t1000000')
+       pw.println('bar\t450000\t300000\t700000\t1500000')
+       pw.flush()
+       
+       assert benchmarker.toString() == sw.toString()
     }
     
     def run() {
         testStandard()
         testMultiple()
+        testPrettyPrint()
     }
     
     static void main(args) {
