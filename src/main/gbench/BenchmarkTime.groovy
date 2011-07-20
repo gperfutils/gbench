@@ -1,9 +1,12 @@
 package gbench
 
-@groovy.transform.ToString(includeNames = true)
 class BenchmarkTime {
     long real
     long cpu
     long system
     long user
+    
+    String toString() {
+        "user:${user} system:${system} cpu:${cpu} real:${real}"
+    } 
 }

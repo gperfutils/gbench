@@ -121,7 +121,7 @@ public @interface Benchmark {
                 shell.setVariable("time", time);
                 shell.evaluate(handle);
             } else {
-                System.out.println(klass + " " + method + ": " + time + " ns");
+                System.out.println(klass + "\t" + method + "\t" + time);
             }
         }
         public static DefaultBenchmarkHandler getInstance() {

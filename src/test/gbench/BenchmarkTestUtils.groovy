@@ -21,17 +21,17 @@ class BenchmarkTestUtils {
     }
     
     static def defaultAssert(actual) {
-        if (System.getProperty("gbench.da")) {
-            assert actual.matches('gbench\\..+ java\\.lang\\.Object [a-zA-Z0-9]+\\(.*\\): [0-9]+ ns')    
-        }
-        System.out.println(actual)
+        assert actual.matches(
+                'gbench\\..+\\tjava\\.lang\\.Object\\s[a-zA-Z0-9]+\\(.*\\)\\t' +
+                'user:[0-9]+\\ssystem:[0-9]+\\scpu:[0-9]+\\sreal:[0-9]+'
+            )
     }
     
     static def customAssert(actual) {
-        if (System.getProperty("gbench.da") == null) {
-            assert actual.matches('gbench\\..+ java\\.lang\\.Object [a-zA-Z0-9]+\\(.*\\) = [0-9]+')    
-        }
-        System.out.println(actual)
+        assert actual.matches(
+                'gbench\\..+\\sof\\sjava\\.lang\\.Object\\s[a-zA-Z0-9]+\\(.*\\)\\t' +
+                'user:[0-9]+\\ssystem:[0-9]+\\scpu:[0-9]+\\sreal:[0-9]+'
+            )    
     }
     
 }

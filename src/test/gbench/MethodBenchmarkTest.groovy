@@ -18,7 +18,7 @@ class MethodBenchmarkTest {
     class CustomBenchmarkHandler implements Benchmark.BenchmarkHandler {
         def result
         void handle(klass, method, time) {
-            result = "${klass} ${method} = ${time}"
+            result = "${klass} of ${method}\t${time}"
         }
     }
     @Benchmark(CustomBenchmarkHandler.class)
@@ -30,7 +30,7 @@ class MethodBenchmarkTest {
         U.customAssert(CustomBenchmarkHandler.instance.result)
     }
 
-    @Benchmark({System.out.println("${klass} ${method} = ${time}")})
+    @Benchmark({System.out.println("${klass} of ${method}\t${time}")})
     def useClosureHandler() {
         U.simulateOperation()
     }
@@ -38,7 +38,7 @@ class MethodBenchmarkTest {
         U.customAssert(U.firstLine(U.callAndGetStdout({useClosureHandler()})))
     }
 
-    @Benchmark({System.out.println("${klass} ${method} = ${time}")})
+    @Benchmark({System.out.println("${klass} of ${method}\t${time}")})
     def useClosureHandlerWithDupArgs(method, time) {
         U.simulateOperation()
     }

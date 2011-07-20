@@ -12,7 +12,7 @@ class ClassBenchmarkTest {
         U.defaultAssert(U.firstLine(U.callAndGetStdout({useClassBenchmark()})))
     }
    
-    @Benchmark({System.out.println("${klass} ${method} = ${time}")})
+    @Benchmark({System.out.println("${klass} of ${method}\t${time}")})
     def useMethodBenchmark() {
         U.simulateOperation()
     }
