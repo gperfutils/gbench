@@ -50,8 +50,8 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * 
  * The ouputs of both examples will be:
  * <pre><code>
- * Klass java.lang.Object foo(): xxx ns
- * Klass java.lang.Object bar(): xxx ns
+ * Klass    java.lang.Object foo()    user:xxx system:xxx cpu:xxx real:xxx
+ * Klass    java.lang.Object bar()    user:xxx system:xxx cpu:xxx real:xxx
  * </code></pre>
  * 
  * The handling of benchmark results can be customized by using handler classes 
@@ -61,7 +61,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * class MyHandler implements Benchmark.BenchmarkHandler {
  *     static def instance = new MyHandler()
  *         void handle(klass method, time) {
- *         println("${method} of ${klass}: ${(time/1000000) as long} ms")
+ *         println("${method} of ${klass}: ${(time.real/1000000) as long} ms")
  * 	   }
  *     static MyHandler getInstance() {
  *         instance
@@ -76,7 +76,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * Since Groovy 1.8, closures can be used instead of handler classes. With
  * closures, you just need to assign closures that handle benchmark results:
  * <pre><code>
- * {@code @Benchmark}({println("${method} of ${class}: ${(time/1000000) as long} ms")})
+ * {@code @Benchmark}({println("${method} of ${class}: ${(time.real/1000000) as long} ms")})
  * def foo() {
  * }
  * </code></pre>
@@ -84,12 +84,12 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * also the default handling operation can be replaced with a system property, 
  * "groovybenchmark.sf.net.defaulthandle":
  * <pre><code>
- * groovy -cp groovybenchmark-xx.xx.xx.jar -Dgroovybenchmark.sf.net.defaulthandle="println(method + ' of ' + klass + ': ' + ((time/1000000) as long) + ' ms')" foo\Foo.groovy
+ * groovy -cp groovybenchmark-xx.xx.xx.jar -Dgroovybenchmark.sf.net.defaulthandle="println(method + ' of ' + klass + ': ' + ((time.real/1000000) as long) + ' ms')" Foo.groovy
  * </code></pre>
  * 
  * Then the ouputs of both examples will be:
  * <pre><code>
- * java.lang.Object foo() of foo.Foo: xxx ms
+ * java.lang.Object foo() of Foo: xxx ms
  * </code></pre>
  * 
  * @author Nagai Masato
