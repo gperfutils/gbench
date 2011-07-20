@@ -82,9 +82,9 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * </code></pre>
  * 
  * also the default handling operation can be replaced with a system property, 
- * "groovybenchmark.sf.net.defaulthandle":
+ * "gbench.defaulthandle":
  * <pre><code>
- * groovy -cp groovybenchmark-xx.xx.xx.jar -Dgroovybenchmark.sf.net.defaulthandle="println(method + ' of ' + klass + ': ' + ((time.real/1000000) as long) + ' ms')" Foo.groovy
+ * groovy -cp gbench-xx.xx.xx.jar -Dgbench.defaulthandle="println(method + ' of ' + klass + ': ' + ((time.real/1000000) as long) + ' ms')" Foo.groovy
  * </code></pre>
  * 
  * Then the ouputs of both examples will be:
@@ -108,7 +108,7 @@ public @interface Benchmark {
         String handle;
         DefaultBenchmarkHandler() {
             String handle = 
-                System.getProperty("groovybenchmark.sf.net.defaulthandle");
+                System.getProperty("gbench.defaulthandle");
             if (handle != null) {
                 this.handle = handle;
                 shell = new GroovyShell();
