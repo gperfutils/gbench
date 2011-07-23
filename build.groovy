@@ -1,7 +1,7 @@
 def project = [
     groupId: "com.google.gbench",
     artifactId: "gbench",
-    version: new Date().format("yy.MM.dd"),
+    version: "0.2.0",
 ]
 
 def srcdir = "src/main"
