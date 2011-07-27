@@ -1,5 +1,5 @@
 def project = [
-    groupId: "com.google.gbench",
+    groupId: "com.googlecode.gbench",
     artifactId: "gbench",
     version: "0.2.0",
 ]
