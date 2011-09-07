@@ -70,6 +70,11 @@ class BenchmarkBuilder {
     int idle
     boolean average
     boolean trim
+    boolean trace
+    
+    BenchmarkBuilder() {
+        this.trace = System.properties['gbench.trace'] 
+    }
 
     /**
      * Gets benchmarks.
@@ -163,9 +168,7 @@ class BenchmarkBuilder {
      * @param clos a code block.
      */
     def with(String label, Closure clos) {
-        idle.times { clos() }
-        def benchmark = [label: label, time: measure(repeat, clos)]
-        benchmarks << benchmark
+        benchmarks << measure(label, clos)
     }
     
     /**
@@ -197,14 +200,23 @@ class BenchmarkBuilder {
         }
     }
     
-    private BenchmarkTime measure(repeat, Closure clos) {
+    private def measure(label, Closure clos) {
         def reals = []
         def cpus = []
         def systems = []
         def users = []
         def mxBean = ManagementFactory.threadMXBean
         def cpuTimeSupported = mxBean.isCurrentThreadCpuTimeSupported()
-        repeat.times {
+        (repeat + idle).times {
+            if (idle != 0 && idle == it) {
+                users.clear()
+                cpus.clear()
+                systems.clear()
+                reals.clear()
+                if (trace) {
+                    println("[BM] ${label}: warm-up completed")
+                }
+            }
             def bReal = System.nanoTime()
             def bCpu
             def bUser
@@ -221,6 +233,9 @@ class BenchmarkBuilder {
                 systems << cpu - user
             }
             reals << System.nanoTime() - bReal
+            if (trace) {
+                println("[BM] ${label}: n=${it},user=${users.last()},system=${systems.last()},cpu=${cpus.last()},real=${reals.last()}")
+            }
         }
         def calc = { list ->
             if (trim) {
@@ -233,12 +248,15 @@ class BenchmarkBuilder {
             }
             return total
         }
-        return new BenchmarkTime(
-            real: calc(reals),
-            cpu: calc(cpus),
-            system: calc(systems),
-            user: calc(users),
-        )
+        return [
+            label: label,
+            time: new BenchmarkTime(
+                          real: calc(reals),
+                          cpu: calc(cpus),
+                          system: calc(systems),
+                          user: calc(users),
+                  )
+        ]
     }
     
     static class Benchmarks extends ArrayList {
