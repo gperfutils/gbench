@@ -70,10 +70,12 @@ class BenchmarkBuilder {
     int idle
     boolean average
     boolean trim
-    boolean trace
+    boolean traceEnabled
+    boolean cpuTimeEnabled
     
     BenchmarkBuilder() {
-        this.trace = System.properties['gbench.trace'] 
+        traceEnabled = BenchmarkUtilities.isTraceEnabled()
+        cpuTimeEnabled = BenchmarkUtilities.isCpuTimeEnabled()
     }
 
     /**
@@ -202,30 +204,42 @@ class BenchmarkBuilder {
     
     private def measure(label, Closure clos) {
         def reals = []
-        def cpus = []
-        def systems = []
-        def users = []
-        def mxBean = ManagementFactory.threadMXBean
-        def cpuTimeSupported = mxBean.isCurrentThreadCpuTimeSupported()
-        (repeat + idle).times {
-            if (idle != 0 && idle == it) {
+        def cpus, systems, users
+        def mxBean
+        def clear
+        if (cpuTimeEnabled) {
+            cpus = []
+            systems = []
+            users []
+            mxBean = ManagementFactory.threadMXBean 
+            clear = {
                 users.clear()
                 cpus.clear()
                 systems.clear()
-                reals.clear()
-                if (trace) {
+                reals.clear() 
+            }
+        } else {
+            cpus = systems = users = [0].asImmutable() 
+            clear = {
+                reals.clear() 
+            }
+        }
+        (repeat + idle).times {
+            if (idle != 0 && idle == it) {
+                clear()
+                if (traceEnabled) {
                     println("[BM] ${label}: warm-up completed")
                 }
             }
             def bReal = System.nanoTime()
             def bCpu
             def bUser
-            if (cpuTimeSupported) {
+            if (cpuTimeEnabled) {
                 bCpu = mxBean.currentThreadCpuTime
                 bUser = mxBean.currentThreadUserTime
             }
             clos()
-            if (cpuTimeSupported) {
+            if (cpuTimeEnabled) {
                 def user = mxBean.currentThreadUserTime - bUser
                 def cpu = mxBean.currentThreadCpuTime - bCpu
                 users << user
@@ -233,7 +247,7 @@ class BenchmarkBuilder {
                 systems << cpu - user
             }
             reals << System.nanoTime() - bReal
-            if (trace) {
+            if (traceEnabled) {
                 println("[BM] ${label}: n=${it},user=${users.last()},system=${systems.last()},cpu=${cpus.last()},real=${reals.last()}")
             }
         }
