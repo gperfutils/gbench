@@ -5,13 +5,13 @@ import java.lang.management.ManagementFactory
 class BenchmarkUtilities {
 
     static boolean isCpuTimeEnabled() {
-        if (Boolean.valueOf(System.properties['gbench.cputime'])) {
+        if ('on' == (System.properties['gbench.cputime']?: 'on')) {
             return ManagementFactory.threadMXBean.isCurrentThreadCpuTimeSupported()
         }
         return false
     }
     
     static boolean isTraceEnabled() {
-        return Boolean.valueOf(System.properties['gbench.trace'])
+        return 'on' == (System.properties['gbench.trace']?: 'off')
     }
 }

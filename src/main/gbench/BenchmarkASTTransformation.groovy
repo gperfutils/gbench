@@ -104,22 +104,11 @@ class BenchmarkASTTransformation implements ASTTransformation {
         def statements = new AstBuilder().buildFromSpec {
             expression {
                 declaration {
-                    variable '__gbench_mxBean'
+                    variable '__gbench_cpuTimeEnabled'
                     token '='
                     methodCall {
-                        classExpression java.lang.management.ManagementFactory
-                        constant 'getThreadMXBean'
-                        argumentList()
-                    }
-                }
-            }
-            expression {
-                declaration {
-                    variable '__gbench_cpuTimeSupported'
-                    token '='
-                    methodCall {
-                        variable '__gbench_mxBean'
-                        constant 'isCurrentThreadCpuTimeSupported'
+                        classExpression gbench.BenchmarkUtilities
+                        constant 'isCpuTimeEnabled'
                         argumentList()
                     }
                 }
@@ -137,23 +126,41 @@ class BenchmarkASTTransformation implements ASTTransformation {
             }
             expression {
                 declaration {
-                    variable '__gbench_bCpu'
+                    variable '__gbench_mxBean'
                     token '='
                     constant()
                 }
             }
             expression {
                 declaration {
+                    variable '__gbench_bCpu'
+                    token '='
+                    constant 0
+                }
+            }
+            expression {
+                declaration {
                     variable '__gbench_bUser'
                     token '='
-                    constant()
+                    constant 0
                 }
             }
             ifStatement {
                 booleanExpression {
-                    variable '__gbench_cpuTimeSupported'
+                    variable '__gbench_cpuTimeEnabled'
                 }    
                 block {
+                    expression {
+                        binary {
+                            variable '__gbench_mxBean'
+                            token '='
+                            methodCall {
+                                classExpression java.lang.management.ManagementFactory
+                                constant 'getThreadMXBean'
+                                argumentList()
+                            }
+                        }
+                    }
                     expression {
                         binary {
                             variable '__gbench_bCpu'    
@@ -188,26 +195,26 @@ class BenchmarkASTTransformation implements ASTTransformation {
                         declaration {
                             variable '__gbench_cpu'
                             token '='
-                            constant()
+                            constant 0
                         }
                     }
                     expression {
                         declaration {
                             variable '__gbench_user'
                             token '='
-                            constant()
+                            constant 0
                         }
                     }
                     expression {
                         declaration {
                             variable '__gbench_system'
                             token '='
-                            constant()
+                            constant 0
                         }
                     }
                     ifStatement {
                         booleanExpression {
-                            variable '__gbench_cpuTimeSupported'
+                            variable '__gbench_cpuTimeEnabled'
                         }    
                         block {
                             expression {

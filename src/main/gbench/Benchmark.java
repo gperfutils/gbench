@@ -92,6 +92,14 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * java.lang.Object foo() of Foo: xxx ms
  * </code></pre>
  * 
+ * <table border="1">
+ * <caption>System Properties</caption>
+ * <tr><th>Key</th><th>Value</th><th>Meaning</th>
+ * <tr><td>"gbench.defaulthandle"</td><td>expression</td><td>Replaces the default benchmark handling.</td></tr>
+ * <tr><td>"gbench.cputime"</td><td>"on","off"</td><td>Enables measuring CPU time. The default value is "on".</td></tr>
+ * </table>
+ * <p/>
+ * 
  * @author Nagai Masato
  */
 @Retention(RetentionPolicy.SOURCE)

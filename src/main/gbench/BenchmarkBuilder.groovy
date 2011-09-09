@@ -59,6 +59,14 @@ import java.lang.management.ManagementFactory
  * +=              62400400    15600100    78000500    121649445
  * concat          46800300    31200200    78000500    129421409
  * </pre>
+ * 
+ * <table border="1">
+ * <caption>System Properties</caption>
+ * <tr><th>Key</th><th>Value</th><th>Meaning</th>
+ * <tr><td>"gbench.cputime"</td><td>"on","off"</td><td>Enables measuring CPU time. The default value is "on".</td></tr>
+ * <tr><td>"gbench.trace"</td><td>"on","off"</td><td>Enables tracing in the builder to understand low-level working. The default value is "off".</td></tr>
+ * </table>
+ * <p/>
  *
  * @author Nagai Masato
  *
@@ -210,7 +218,7 @@ class BenchmarkBuilder {
         if (cpuTimeEnabled) {
             cpus = []
             systems = []
-            users []
+            users = []
             mxBean = ManagementFactory.threadMXBean 
             clear = {
                 users.clear()
