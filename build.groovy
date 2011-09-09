@@ -1,7 +1,7 @@
 def project = [
     groupId: "com.googlecode.gbench",
     artifactId: "gbench",
-    version: "0.2.0",
+    version: "0.2.1",
 ]
 
 def srcdir = "src/main"
