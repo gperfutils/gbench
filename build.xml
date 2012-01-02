@@ -1,6 +1,6 @@
 <project name="GBench" default="dist" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
   <property name="id" value="gbench" />
-  <property name="version" value="0.3.0-SNAPSHOT" />
+  <property name="version" value="0.3.0" />
   <property name="vendor" value="Nagai Masato" />
 
   <!-- directories -->
@@ -188,23 +188,18 @@
     </antcall>
   </target>
 	
-	<target name="-init-deploy" depends="binary,source,javadoc">
+	<target name="deploy" depends="-init-maven-tasks,binary" 
+		      description="Deploy snapshot version to Maven snapshot repository.">
+		<property name="maven.artifact.version" value="${version}-groovy-${groovy.version.major}-SNAPSHOT" />
+		<echo message="Deploying ${maven.artifact.version}..." />
 		<property name="deploy.dir" value="${dist.dir}" />
-		<property name="maven.artifact.version" value="${version}-groovy-${groovy.version.major}" />
 		<property name="maven.artifact.prefix" value="${id}-${maven.artifact.version}" />
 		<property name="maven.pom" value="${deploy.dir}/${maven.artifact.prefix}.pom" />
 		<property name="maven.jar" value="${deploy.dir}/${maven.artifact.prefix}.jar" />
-		<property name="maven.sources.jar" value="${deploy.dir}/${maven.artifact.prefix}-sources.jar" />
-		<property name="maven.javadoc.jar" value="${deploy.dir}/${maven.artifact.prefix}-javadoc.jar" />
     <copy file="pom.xml" tofile="${maven.pom}" />		
 		<replace file="${maven.pom}" token="@version@" value="${maven.artifact.version}" />
-    <copy file="${dist.dir}/${id}-${maven.artifact.version}.jar" tofile="${maven.jar}" />		
-    <copy file="${dist.dir}/${id}-${version}-sources.jar" tofile="${maven.sources.jar}" />		
-    <copy file="${dist.dir}/${id}-${version}-javadoc.jar" tofile="${maven.javadoc.jar}" />		
-	</target>
-	
-	<target name="deploy" depends="-init-maven-tasks,-init-deploy" 
-		      description="Deploy snapshot version to Maven snapshot repository.">
+    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar" tofile="${maven.jar}" />		
+		
 	  <artifact:mvn>
       <arg value="org.apache.maven.plugins:maven-deploy-plugin:2.6:deploy-file" />
       <arg value="-Durl=${maven-snapshots-repository-url}" />
@@ -214,39 +209,65 @@
     </artifact:mvn>
 	</target>
 	
-	 <target name="stage" depends="-init-deploy" 
+  <target name="deploy-all" 
+  	      description="Deploy snapshot versions for all the supported versions of Groovy to Maven snapshot repository.">
+    <antcall target="deploy">
+      <param name="groovy.version.major" value="1.7" />
+      <param name="groovy.version.minor" value="${groovy.1.7.version.minor}" />
+    </antcall>
+    <antcall target="deploy">
+      <param name="groovy.version.major" value="1.8" />
+      <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+    </antcall>
+  </target>
+	
+	 <target name="stage" depends="-init-maven-tasks,binary,source,javadoc" 
 	 	       description="Deploy release version to Maven staging repository">
-	    <!-- sign and deploy the main artifact -->
-	    <artifact:mvn>
-	      <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
-	      <arg value="-Durl=${maven-staging-repository-url}" />
-	      <arg value="-DrepositoryId=${maven-staging-repository-id}" />
-	      <arg value="-DpomFile=${maven.pom}" />
-	      <arg value="-Dfile=${maven.jar}" />
-        <arg value="-Pgpg" />
-	    </artifact:mvn>
+		<property name="maven.artifact.version" value="${version}-groovy-${groovy.version.major}" />
+		<echo message="Deploying ${maven.artifact.version}..." />
+		<property name="deploy.dir" value="${dist.dir}" />
+		<property name="maven.artifact.prefix" value="${id}-${maven.artifact.version}" />
+		<property name="maven.pom" value="${deploy.dir}/${maven.artifact.prefix}.pom" />
+		<property name="maven.jar" value="${deploy.dir}/${maven.artifact.prefix}.jar" />
+		<property name="maven.sources.jar" value="${deploy.dir}/${maven.artifact.prefix}-sources.jar" />
+		<property name="maven.javadoc.jar" value="${deploy.dir}/${maven.artifact.prefix}-javadoc.jar" />
+    <copy file="pom.xml" tofile="${maven.pom}" />		
+		<replace file="${maven.pom}" token="@version@" value="${maven.artifact.version}" />
+    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar" tofile="${maven.jar}" />		
+    <copy file="${dist.dir}/${id}-${version}-sources.jar" tofile="${maven.sources.jar}" />		
+    <copy file="${dist.dir}/${id}-${version}-javadoc.jar" tofile="${maven.javadoc.jar}" />		
+	 	
+    <!-- sign and deploy the main artifact -->
+    <artifact:mvn>
+      <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+      <arg value="-Durl=${maven-staging-repository-url}" />
+      <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+      <arg value="-DpomFile=${maven.pom}" />
+      <arg value="-Dfile=${maven.jar}" />
+      <arg value="-Pgpg" />
+    </artifact:mvn>
 
-	    <!-- sign and deploy the sources artifact -->
-	    <artifact:mvn>
-	      <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
-	      <arg value="-Durl=${maven-staging-repository-url}" />
-	      <arg value="-DrepositoryId=${maven-staging-repository-id}" />
-	      <arg value="-DpomFile=${maven.pom}" />
-	      <arg value="-Dfile=${maven.sources.jar}" />
-	      <arg value="-Dclassifier=sources" />
-        <arg value="-Pgpg" />
-	    </artifact:mvn>
+    <!-- sign and deploy the sources artifact -->
+    <artifact:mvn>
+      <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+      <arg value="-Durl=${maven-staging-repository-url}" />
+      <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+      <arg value="-DpomFile=${maven.pom}" />
+      <arg value="-Dfile=${maven.sources.jar}" />
+      <arg value="-Dclassifier=sources" />
+      <arg value="-Pgpg" />
+    </artifact:mvn>
 
-	    <!-- sign and deploy the javadoc artifact -->
-	    <artifact:mvn>
-	      <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
-	      <arg value="-Durl=${maven-staging-repository-url}" />
-	      <arg value="-DrepositoryId=${maven-staging-repository-id}" />
-	      <arg value="-DpomFile=${maven.pom}" />
-	      <arg value="-Dfile=${maven.javadoc.jar}" />
-	      <arg value="-Dclassifier=javadoc" />
-        <arg value="-Pgpg" />
-	    </artifact:mvn>
-	  </target>
+    <!-- sign and deploy the javadoc artifact -->
+    <artifact:mvn>
+      <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+      <arg value="-Durl=${maven-staging-repository-url}" />
+      <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+      <arg value="-DpomFile=${maven.pom}" />
+      <arg value="-Dfile=${maven.javadoc.jar}" />
+      <arg value="-Dclassifier=javadoc" />
+      <arg value="-Pgpg" />
+    </artifact:mvn>
+  </target>
 	
 </project>
