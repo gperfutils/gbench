@@ -15,7 +15,7 @@
  */
 package gbench;
 
-import gbench.Benchmark.BenchmarkHandler
+
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
 
@@ -45,6 +45,7 @@ import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.ast.stmt.TryCatchStatement
+import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.syntax.Token
@@ -101,6 +102,9 @@ class BenchmarkASTTransformation implements ASTTransformation {
     }
    
     void transform(MethodNode method, AnnotationNode benchmark) {
+        if (!(method.code instanceof BlockStatement)) {
+            return
+        }
         def statements = new AstBuilder().buildFromSpec {
             expression {
                 declaration {
@@ -409,7 +413,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
         return handleStatement
     }
     
-    static class ClosureBenchmarkHandler implements BenchmarkHandler {
+    static class ClosureBenchmarkHandler implements Benchmark.BenchmarkHandler {
         
         Closure clos;
         

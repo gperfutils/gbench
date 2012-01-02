@@ -1,0 +1,27 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.googlecode.gbench</groupId>
+  <artifactId>gbench</artifactId>
+  <packaging>jar</packaging>
+  <name>GBench</name>
+  <version>@version@</version>
+  <description>GBench is a benchmarking framework for Groovy</description>
+  <url>http://code.google.com/p/gbench</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+  <scm>
+    <connection>scm:svn:http://gbench.googlecode.com/svn</connection>
+    <developerConnection>scm:svn:https://gbench.googlecode.com/svn</developerConnection>
+    <url>http://code.google.com/p/gbench/source/browse</url>
+  </scm>
+</project>

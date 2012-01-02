@@ -1,6 +1,9 @@
 package gbench
 
+
 import java.lang.management.*
+
+import org.junit.Test
 
 class BenchmarkBuilderTest {
     
@@ -9,7 +12,7 @@ class BenchmarkBuilderTest {
         return ManagementFactory.threadMXBean.isCurrentThreadCpuTimeSupported()
     }
     
-    def testStandard() {
+    @Test void testStandard() {
         def benchmarker = new BenchmarkBuilder()    
         def benchmarks = benchmarker.run {
             foo {
@@ -38,7 +41,7 @@ class BenchmarkBuilderTest {
         benchmarks.prettyPrint()
     }
     
-    def testMultiple() {
+    @Test void testMultiple() {
         def benchmarker = new BenchmarkBuilder()
         def benchmarks = benchmarker.run {
             foo {
@@ -52,7 +55,7 @@ class BenchmarkBuilderTest {
         assert benchmarks.sort()*.label == ['bar', 'foo']
     }
     
-    def testPrettyPrint() {
+    @Test void testPrettyPrint() {
        def benchmarker = new BenchmarkBuilder() 
        benchmarker.benchmarks = []
        benchmarker.benchmarks << [
@@ -73,15 +76,5 @@ class BenchmarkBuilderTest {
        pw.flush()
        
        assert benchmarker.toString() == sw.toString()
-    }
-    
-    def run() {
-        testStandard()
-        testMultiple()
-        testPrettyPrint()
-    }
-    
-    static void main(args) {
-        new BenchmarkBuilderTest().run()
     }
 }

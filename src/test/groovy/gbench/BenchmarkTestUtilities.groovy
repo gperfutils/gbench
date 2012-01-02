@@ -1,6 +1,7 @@
 package gbench
 
-class BenchmarkTestUtils {
+
+class BenchmarkTestUtilities {
 
     static def callAndGetStdout(expression) {
         def stdout = System.out;
