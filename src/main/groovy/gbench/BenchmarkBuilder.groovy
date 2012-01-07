@@ -16,6 +16,7 @@
 package gbench
 
 import java.lang.management.ManagementFactory
+import java.util.logging.Logger
 
 /**
  * A builder for benchmarking.
@@ -72,6 +73,8 @@ import java.lang.management.ManagementFactory
  *
  */
 class BenchmarkBuilder {
+    
+    public static int AUTO = -1;
 
     Benchmarks benchmarks
     int repeat
@@ -97,7 +100,7 @@ class BenchmarkBuilder {
      *              <code>1</code>.</li>
      * <li>idle:    times to execute each code block before starting to 
      *              benchmark. This option is useful to reduce effects of 
-     *              overhead. the default value is <code>1</code>.</li>
+     *              overhead. the default value is {@link AUTO}.</li>
      * <li>trim:    if <code>true</code>, removes the highest and the lowest 
      *              benchmarks. the default value is <code>false</code>.</li>
      * </ul>
@@ -108,7 +111,7 @@ class BenchmarkBuilder {
         benchmarks = new Benchmarks()
         repeat = options.times ?: /* for backward compatibility */  
                     options.repeat ?: 1
-        idle = options.idle ?: 1
+        idle = options.idle ?: AUTO
         average = options.average ?: false
         if (options.trim) {
             trim = true
@@ -117,6 +120,7 @@ class BenchmarkBuilder {
                 trim = false
             }
         }
+        clos.resolveStrategy = Closure.DELEGATE_FIRST
         clos.delegate = this
         clos()
         return benchmarks
@@ -132,7 +136,7 @@ class BenchmarkBuilder {
      *              <code>1</code>.</li>
      * <li>idle:    times to execute each code block before starting to 
      *              benchmark. This option is useful to reduce effects of 
-     *              overhead. the default value is <code>1</code>.</li>
+     *              overhead. the default value is {@link AUTO}.</li>
      * <li>trim:    if <code>true</code>, removes the highest and the lowest 
      *              benchmarks. the default value is <code>false</code>.</li>
      * </ul>
@@ -154,7 +158,7 @@ class BenchmarkBuilder {
      *              <code>1</code>.</li>
      * <li>idle:    times to execute each code block before starting to 
      *              benchmark. This option is useful to reduce effects of 
-     *              overhead. the default value is <code>1</code>.</li>
+     *              overhead. the default value is {@link AUTO}.</li>
      * <li>trim:    if <code>true</code>, removes the highest and the lowest 
      *              benchmarks. the default value is <code>false</code>.</li>
      * </ul>
@@ -213,13 +217,14 @@ class BenchmarkBuilder {
     private def measure(label, Closure clos) {
         def reals = []
         def cpus, systems, users
-        def mxBean
+        def thMxBean
+        def clMxBean = ManagementFactory.classLoadingMXBean
         def clear
         if (cpuTimeEnabled) {
             cpus = []
             systems = []
             users = []
-            mxBean = ManagementFactory.threadMXBean 
+            thMxBean = ManagementFactory.threadMXBean 
             clear = {
                 users.clear()
                 cpus.clear()
@@ -232,31 +237,57 @@ class BenchmarkBuilder {
                 reals.clear() 
             }
         }
-        (repeat + idle).times {
-            if (idle != 0 && idle == it) {
+        
+        def rest = repeat + (AUTO == idle ? 1 : idle)
+        for (def n = 1; rest > 0; n++) {
+            if (idle != 0 && rest == repeat) {
                 clear()
+                rest = repeat
                 if (traceEnabled) {
-                    println("[BM] ${label}: warm-up completed")
+                    println("[BM] ${label}: **** warm-up stopped. ****")
                 }
             }
+            
+            def bLoadedClasses = clMxBean.totalLoadedClassCount
+            def bUnloadedClasses = clMxBean.unloadedClassCount
+            
             def bReal = System.nanoTime()
             def bCpu
             def bUser
             if (cpuTimeEnabled) {
-                bCpu = mxBean.currentThreadCpuTime
-                bUser = mxBean.currentThreadUserTime
+                bCpu = thMxBean.currentThreadCpuTime
+                bUser = thMxBean.currentThreadUserTime
             }
             clos()
             if (cpuTimeEnabled) {
-                def user = mxBean.currentThreadUserTime - bUser
-                def cpu = mxBean.currentThreadCpuTime - bCpu
+                def user = thMxBean.currentThreadUserTime - bUser
+                def cpu = thMxBean.currentThreadCpuTime - bCpu
                 users << user
                 cpus << cpu
                 systems << cpu - user
             }
             reals << System.nanoTime() - bReal
+            
             if (traceEnabled) {
-                println("[BM] ${label}: n=${it},user=${users.last()},system=${systems.last()},cpu=${cpus.last()},real=${reals.last()}")
+                println "[BM] ${label}: n=${n},user=${users.last()},system=${systems.last()},cpu=${cpus.last()},real=${reals.last()}"
+            }
+            
+            def aLoadedClasses = clMxBean.totalLoadedClassCount 
+            def aUnloadedClasses = clMxBean.unloadedClassCount
+            if (bLoadedClasses != aLoadedClasses || 
+                bUnloadedClasses != aUnloadedClasses) {
+                if (traceEnabled) {
+                    println "[BM] ${label}: **** class loading/unloding occurred."
+                }
+                if (AUTO == idle) {
+                    if (traceEnabled) {
+                        println "[BM] ${label}: **** warm-up continued. ****"
+                    }
+                } else {
+                    rest--
+                }
+            } else {
+                rest--
             }
         }
         def calc = { list ->
