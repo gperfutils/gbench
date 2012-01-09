@@ -238,16 +238,9 @@ class BenchmarkBuilder {
             }
         }
         
-        def rest = repeat + (AUTO == idle ? 1 : idle)
+        def rest = repeat
+        def restOfIdle = AUTO == idle ? 1 : idle
         for (def n = 1; rest > 0; n++) {
-            if (idle != 0 && rest == repeat) {
-                clear()
-                rest = repeat
-                if (traceEnabled) {
-                    println("[BM] ${label}: **** warm-up stopped. ****")
-                }
-            }
-            
             def bLoadedClasses = clMxBean.totalLoadedClassCount
             def bUnloadedClasses = clMxBean.unloadedClassCount
             
@@ -274,13 +267,14 @@ class BenchmarkBuilder {
             }
             
             def countable = true
-            
+            def warmingUp = 1 <= restOfIdle
+           
             def aLoadedClasses = clMxBean.totalLoadedClassCount 
             def aUnloadedClasses = clMxBean.unloadedClassCount
             if (bLoadedClasses != aLoadedClasses || 
                 bUnloadedClasses != aUnloadedClasses) {
                 if (traceEnabled) {
-                    println "[BM] ${label}: **** class loading/unloding occurred while measuring."
+                    println "[BM] ${label}: **** class loading/unloding occurred while measuring. ****"
                 }
                 if (AUTO == idle) {
                     countable = false
@@ -288,16 +282,33 @@ class BenchmarkBuilder {
             }
                 
             if (countable) {
-                reals << real
-                if (cpuTimeEnabled) {
-                    users << user    
-                    cpus << cpu
-                    systems << system
-                }
-                rest--
+                if (!warmingUp) {
+                    reals << real
+                    if (cpuTimeEnabled) {
+                        users << user    
+                        cpus << cpu
+                        systems << system
+                    }
+                    rest--
+                } else {
+                    if (1 == restOfIdle) {
+                        if (traceEnabled) {
+                            println("[BM] ${label}: **** warm-up stopped. ****")
+                        }
+                    }
+                    restOfIdle--
+                } 
             } else {
-                if (traceEnabled) {
-                    println "[BM] ${label}: **** the measurement is not valid. it is destroyed. ****"
+                if (warmingUp) {
+                    if (traceEnabled) {
+                        println "[BM] ${label}: **** warm-up continued. ****"
+                    }
+                } else {
+                    restOfIdle = 1
+                    if (traceEnabled) {
+                        println "[BM] ${label}: **** the measurement is not valid. it is destroyed. ****"
+                        println "[BM] ${label}: **** warm-up restarted. ****"
+                    }
                 }
             }
         }
