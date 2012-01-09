@@ -259,35 +259,46 @@ class BenchmarkBuilder {
                 bUser = thMxBean.currentThreadUserTime
             }
             clos()
+            def user = 0L
+            def cpu = 0L
+            def system = 0L
+            def real = System.nanoTime() - bReal
             if (cpuTimeEnabled) {
-                def user = thMxBean.currentThreadUserTime - bUser
-                def cpu = thMxBean.currentThreadCpuTime - bCpu
-                users << user
-                cpus << cpu
-                systems << cpu - user
+                user = thMxBean.currentThreadUserTime - bUser
+                cpu = thMxBean.currentThreadCpuTime - bCpu
+                system = cpu - user
             }
-            reals << System.nanoTime() - bReal
             
             if (traceEnabled) {
-                println "[BM] ${label}: n=${n},user=${users.last()},system=${systems.last()},cpu=${cpus.last()},real=${reals.last()}"
+                println "[BM] ${label}: n=${n},user=${user},system=${system},cpu=${cpu},real=${real}"
             }
+            
+            def countable = true
             
             def aLoadedClasses = clMxBean.totalLoadedClassCount 
             def aUnloadedClasses = clMxBean.unloadedClassCount
             if (bLoadedClasses != aLoadedClasses || 
                 bUnloadedClasses != aUnloadedClasses) {
                 if (traceEnabled) {
-                    println "[BM] ${label}: **** class loading/unloding occurred."
+                    println "[BM] ${label}: **** class loading/unloding occurred while measuring."
                 }
                 if (AUTO == idle) {
-                    if (traceEnabled) {
-                        println "[BM] ${label}: **** warm-up continued. ****"
-                    }
-                } else {
-                    rest--
+                    countable = false
                 }
-            } else {
+            }
+                
+            if (countable) {
+                reals << real
+                if (cpuTimeEnabled) {
+                    users << user    
+                    cpus << cpu
+                    systems << system
+                }
                 rest--
+            } else {
+                if (traceEnabled) {
+                    println "[BM] ${label}: **** the measurement is not valid. it is destroyed. ****"
+                }
             }
         }
         def calc = { list ->
