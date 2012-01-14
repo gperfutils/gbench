@@ -16,7 +16,10 @@
 package gbench
 
 import java.lang.management.ManagementFactory
-import java.util.logging.Logger
+
+import javax.management.Notification
+import javax.management.NotificationEmitter
+import javax.management.NotificationListener
 
 /**
  * A builder for benchmarking.
@@ -83,6 +86,7 @@ class BenchmarkBuilder {
     boolean trim
     boolean traceEnabled
     boolean cpuTimeEnabled
+    
     
     BenchmarkBuilder() {
         traceEnabled = BenchmarkUtilities.isTraceEnabled()
@@ -213,8 +217,34 @@ class BenchmarkBuilder {
             with(name, args[0])
         }
     }
+   
+    private def cleanHeap() {
+        if (traceEnabled) {
+            println "[BM] **** heap cleaning started. ****"
+        }
+        def mMxBean = ManagementFactory.memoryMXBean
+        def bHeapUsage = mMxBean.heapMemoryUsage.used
+        while (true) {
+            System.gc()
+            
+            // try to gc objects that override finalize() method.
+            System.runFinalization()
+            System.gc()
+            
+            def aHeapUsage = mMxBean.heapMemoryUsage.used
+            if (bHeapUsage > aHeapUsage) {
+                bHeapUsage = aHeapUsage
+                continue
+            }
+            break
+        }
+        if (traceEnabled) {;
+            println "[BM] **** heap cleaning finished. ****"
+        }
+    }
     
     private def measure(label, Closure clos) {
+        cleanHeap()
         def reals = []
         def cpus, systems, users
         def thMxBean
@@ -274,7 +304,7 @@ class BenchmarkBuilder {
             if (bLoadedClasses != aLoadedClasses || 
                 bUnloadedClasses != aUnloadedClasses) {
                 if (traceEnabled) {
-                    println "[BM] ${label}: **** class loading/unloding occurred while measuring. ****"
+                    println "[BM] ${label}: **** class loading/unloding occurred. ****"
                 }
                 if (AUTO == idle) {
                     countable = false
