@@ -16,10 +16,7 @@
 package gbench
 
 import java.lang.management.ManagementFactory
-
-import javax.management.Notification
-import javax.management.NotificationEmitter
-import javax.management.NotificationListener
+import java.lang.management.ThreadMXBean
 
 /**
  * A builder for benchmarking.
@@ -124,6 +121,9 @@ class BenchmarkBuilder {
                 trim = false
             }
         }
+        
+        warmUpMeasuring()
+        
         clos.resolveStrategy = Closure.DELEGATE_FIRST
         clos.delegate = this
         clos()
@@ -243,6 +243,38 @@ class BenchmarkBuilder {
         }
     }
     
+    private def doMeasure(ThreadMXBean thMxBean, Closure clos) {
+        def bReal = System.nanoTime()
+        def bCpu
+        def bUser
+        if (cpuTimeEnabled) {
+            bCpu = thMxBean.currentThreadCpuTime
+            bUser = thMxBean.currentThreadUserTime
+        }
+        clos()
+        def user = 0L
+        def cpu = 0L
+        def system = 0L
+        def real = System.nanoTime() - bReal
+        if (cpuTimeEnabled) {
+            user = thMxBean.currentThreadUserTime - bUser
+            cpu = thMxBean.currentThreadCpuTime - bCpu
+            system = cpu - user
+        }
+        new BenchmarkTime(user: user, cpu: cpu, system: system, real: real)
+    }
+    
+    private def warmUpMeasuring() {
+        if (traceEnabled) {
+            println "[BM] **** warm-up for the measuring operation started."    
+        }
+        def time = doMeasure(ManagementFactory.threadMXBean){-> }
+        if (traceEnabled) {
+            println "[BM] time=[$time]"
+            println "[BM] **** warm-up for the measuring operation finished."    
+        }
+    }
+    
     private def measure(label, Closure clos) {
         cleanHeap()
         def reals = []
@@ -274,26 +306,9 @@ class BenchmarkBuilder {
             def bLoadedClasses = clMxBean.totalLoadedClassCount
             def bUnloadedClasses = clMxBean.unloadedClassCount
             
-            def bReal = System.nanoTime()
-            def bCpu
-            def bUser
-            if (cpuTimeEnabled) {
-                bCpu = thMxBean.currentThreadCpuTime
-                bUser = thMxBean.currentThreadUserTime
-            }
-            clos()
-            def user = 0L
-            def cpu = 0L
-            def system = 0L
-            def real = System.nanoTime() - bReal
-            if (cpuTimeEnabled) {
-                user = thMxBean.currentThreadUserTime - bUser
-                cpu = thMxBean.currentThreadCpuTime - bCpu
-                system = cpu - user
-            }
-            
+            def time = doMeasure(thMxBean, clos) 
             if (traceEnabled) {
-                println "[BM] ${label}: n=${n},user=${user},system=${system},cpu=${cpu},real=${real}"
+                println "[BM] ${label}: n=${n},time=[$time]"
             }
             
             def countable = true
@@ -313,11 +328,11 @@ class BenchmarkBuilder {
                 
             if (countable) {
                 if (!warmingUp) {
-                    reals << real
+                    reals << time.real
                     if (cpuTimeEnabled) {
-                        users << user    
-                        cpus << cpu
-                        systems << system
+                        users << time.user    
+                        cpus << time.cpu
+                        systems << time.system
                     }
                     rest--
                 } else {
