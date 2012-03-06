@@ -21,14 +21,15 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.management.ManagementFactory;
 
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
 /**
- * An annotation to benchmark methods.
+ * An annotation for benchmarking.
  * <p> 
- * This annotation allows you to benchmark methods without modifying their 
- * existing code. It can be added to  methods or classes.
+ * This annotation allows execution time measurement without modifying 
+ * existing code.
  * <pre><code>
  * class Klass {
  *     {@code @Benchmark}
@@ -82,9 +83,9 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * </code></pre>
  * 
  * also the default handling operation can be replaced with a system property, 
- * "gbench.defaulthandle":
+ * "gbench.defaultHandler":
  * <pre><code>
- * groovy -cp gbench-xx.xx.xx.jar -Dgbench.defaulthandle="println(method + ' of ' + klass + ': ' + ((time.real/1000000) as long) + ' ms')" Foo.groovy
+ * groovy -cp gbench-xx.xx.xx.jar -Dgbench.defaultHandler="println(method + ' of ' + klass + ': ' + ((time.real/1000000) as long) + ' ms')" Foo.groovy
  * </code></pre>
  * 
  * Then the ouputs of both examples will be:
@@ -95,8 +96,8 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * <table border="1">
  * <caption>System Properties</caption>
  * <tr><th>Key</th><th>Value</th><th>Meaning</th>
- * <tr><td>"gbench.defaulthandle"</td><td>expression</td><td>Replaces the default benchmark handling.</td></tr>
- * <tr><td>"gbench.cputime"</td><td>"on","off"</td><td>Enables measuring CPU time. The default value is "on".</td></tr>
+ * <tr><td>gbench.defaultHandler</td><td>expression</td><td>the default benchmark handler.</td></tr>
+ * <tr><td>gbench.measureCpuTime</td><td>true, false</td><td>enables measuring CPU time. the default value is "true".</td></tr>
  * </table>
  * <p/>
  * 
@@ -113,23 +114,25 @@ public @interface Benchmark {
         static final DefaultBenchmarkHandler instance = 
             new DefaultBenchmarkHandler();
         GroovyShell shell;
-        String handle;
+        String handler;
         DefaultBenchmarkHandler() {
-            String handle = 
-                System.getProperty("gbench.defaulthandle");
-            if (handle != null) {
-                this.handle = handle;
+            String handler = System.getProperty("gbench.defaultHandler");
+            if (null != handler) {
+                this.handler = handler;
                 shell = new GroovyShell();
             }
         }
         public void handle(Object klass, Object method, Object time) {
-            if (handle != null) {
+            if (handler != null) {
                 shell.setVariable("klass", klass);
                 shell.setVariable("method", method);
                 shell.setVariable("time", time);
-                shell.evaluate(handle);
+                shell.evaluate(handler);
             } else {
-                System.out.println(klass + "\t" + method + "\t" + time);
+                System.out.println(klass + "  " + method + "  " + 
+                    (BenchmarkSystem.isMeasureCpuTime() && 
+                        ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ? 
+                            time : ((BenchmarkTime) time).getReal()));
             }
         }
         public static DefaultBenchmarkHandler getInstance() {

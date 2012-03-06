@@ -23,7 +23,7 @@ class BenchmarkTestUtilities {
     
     static def defaultAssert(actual) {
         assert actual.matches(
-                'gbench\\..+\\tjava\\.lang\\.Object\\s[a-zA-Z0-9]+\\(.*\\)\\t' +
+                'gbench\\..+\\s\\sjava\\.lang\\.Object\\s[a-zA-Z0-9]+\\(.*\\)\\s\\s' +
                 'user:[0-9]+\\ssystem:[0-9]+\\scpu:[0-9]+\\sreal:[0-9]+'
             )
     }

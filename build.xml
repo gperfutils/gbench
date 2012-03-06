@@ -15,7 +15,7 @@
   <!-- groovy 1.7 -->
   <property name="groovy.1.7.version.minor" value="10" />
   <!-- groovy 1.8 -->
-  <property name="groovy.1.8.version.minor" value="4" />
+  <property name="groovy.1.8.version.minor" value="6" />
   <!-- default groovy -->
   <property name="groovy.version.major" value="1.8" />
   <property name="groovy.version.minor" value="${groovy.1.8.version.minor}" />

@@ -5,34 +5,37 @@ import java.lang.management.*
 
 import org.junit.Test
 
+import static org.junit.Assert.*
+
 class BenchmarkBuilderTest {
     
-    private isCpuTimeSupported() {
-        def mxBean = ManagementFactory.getThreadMXBean();
-        return ManagementFactory.threadMXBean.isCurrentThreadCpuTimeSupported()
+    @Test void testDefaultOptions() {
+        def bb = new BenchmarkBuilder()
+        bb.options = [:]
+        assert BenchmarkBuilder.AUTO == bb.options.warmUpTime
+        assert true == bb.options.measureCpuTime
+        assert false == bb.options.quiet
+        assert false == bb.options.verbose
+    }
+    
+    @Test void testOptions() {
+        def bb = new BenchmarkBuilder()
+        bb.options = [ warmUpTime: 1, measureCpuTime: false, 
+            quiet: true, verbose: true ]
+        assert 1 == bb.options.warmUpTime
+        assert false == bb.options.measureCpuTime
+        assert true == bb.options.quiet
+        assert true == bb.options.verbose
     }
     
     @Test void testStandard() {
-        def benchmarker = new BenchmarkBuilder()    
-        def benchmarks = benchmarker.run {
-            foo {
-                // gain user-time
-                def sum = 0
-                (0..100000).each {
-                    sum += it    
-                }
-                
-                // gain system-time
-                def file = new File('.')
-                1000.times {
-                    file.list()
-                }
-            }    
+        def benchmarks = new BenchmarkBuilder().run {
+            Thread.sleep(1000)
         }
         benchmarks.each { bm ->
             assert bm.label == 'foo'   
             assert bm.time.real > 0 
-            if (isCpuTimeSupported()) {
+            if (ManagementFactory.threadMXBean.isCurrentThreadCpuTimeSupported()) {
                 assert bm.time.cpu > 0 
                 assert bm.time.user > 0 
                 assert bm.time.system > 0 
@@ -57,7 +60,7 @@ class BenchmarkBuilderTest {
     
     @Test void testPrettyPrint() {
        def benchmarker = new BenchmarkBuilder() 
-       benchmarker.benchmarks = []
+       benchmarker.benchmarks = new BenchmarkList(options: [measureCpuTime: true])
        benchmarker.benchmarks << [
                label: 'foo',
                time: new BenchmarkTime(user:300000, system:200000, cpu:500000, real:1000000)
@@ -69,12 +72,12 @@ class BenchmarkBuilderTest {
        
        def sw = new StringWriter()
        def pw = new PrintWriter(sw)
-       pw.println('   \t  user\tsystem\t   cpu\t   real')
+       pw.println('       user  system     cpu     real')
        pw.println()
-       pw.println('foo\t300000\t200000\t500000\t1000000')
-       pw.println('bar\t450000\t300000\t700000\t1500000')
+       pw.println('foo  300000  200000  500000  1000000')
+       pw.println('bar  450000  300000  700000  1500000')
        pw.flush()
        
-       assert benchmarker.toString() == sw.toString()
+       assertEquals(sw.toString(), benchmarker.toString())
     }
 }

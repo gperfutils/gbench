@@ -19,6 +19,7 @@ package gbench;
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
 
+import java.lang.management.ManagementFactory
 import java.util.Arrays
 import java.util.Map
 
@@ -30,26 +31,15 @@ import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.builder.AstBuilder
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
-import org.codehaus.groovy.ast.expr.BinaryExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ClosureExpression
-import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression
-import org.codehaus.groovy.ast.expr.DeclarationExpression
-import org.codehaus.groovy.ast.expr.Expression
-import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.EmptyStatement
-import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.Statement
-import org.codehaus.groovy.ast.stmt.TryCatchStatement
-import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.syntax.Token
-import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 
@@ -80,6 +70,10 @@ class BenchmarkASTTransformation implements ASTTransformation {
         if (MY_TYPE != annotation.classNode) {
             return
         }
+        if (BenchmarkSystem.isMeasureCpuTime() && 
+            !ManagementFactory.threadMXBean.currentThreadCpuTimeSupported) {
+            System.err.println("The JVM doesn't support CPU time measurement.")
+        }
         def parent = nodes[1] 
         if (parent instanceof MethodNode) {
             transform((MethodNode) parent, annotation)
@@ -108,12 +102,20 @@ class BenchmarkASTTransformation implements ASTTransformation {
         def statements = new AstBuilder().buildFromSpec {
             expression {
                 declaration {
-                    variable '__gbench_cpuTimeEnabled'
+                    variable '__gbench_measureCpuTime'
                     token '='
-                    methodCall {
-                        classExpression gbench.BenchmarkUtilities
-                        constant 'isCpuTimeEnabled'
-                        argumentList()
+                    binary {
+                        methodCall {
+                            classExpression gbench.BenchmarkSystem
+                            constant 'isMeasureCpuTime'
+                            argumentList()
+                        }
+                        token '&&'
+                        methodCall {
+                            classExpression java.lang.management.ManagementFactory
+                            constant 'getThreadMXBean'
+                            argumentList()
+                        }
                     }
                 }
             }
@@ -151,7 +153,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
             }
             ifStatement {
                 booleanExpression {
-                    variable '__gbench_cpuTimeEnabled'
+                    variable '__gbench_measureCpuTime'
                 }    
                 block {
                     expression {
@@ -218,7 +220,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                     }
                     ifStatement {
                         booleanExpression {
-                            variable '__gbench_cpuTimeEnabled'
+                            variable '__gbench_measureCpuTime'
                         }    
                         block {
                             expression {
