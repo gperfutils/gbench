@@ -3,7 +3,7 @@ def target = args? args[0] : 'dist'
 def project = [
     groupId: "com.googlecode.gbench",
     artifactId: "gbench",
-    version: "0.2.1",
+    version: "0.2.2",
 ]
 
 def srcdir = "src/main"
