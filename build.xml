@@ -16,6 +16,9 @@
   <property name="groovy.1.7.version.minor" value="10" />
   <!-- groovy 1.8 -->
   <property name="groovy.1.8.version.minor" value="6" />
+  <!-- groovy 2.0 -->
+  <property name="groovy.2.0.version.minor" value="0-beta-2" />
+
   <!-- default groovy -->
   <property name="groovy.version.major" value="1.8" />
   <property name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
@@ -79,6 +82,10 @@
     <antcall target="binary">
       <param name="groovy.version.major" value="1.8" />
       <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+    </antcall>
+    <antcall target="deploy">
+      <param name="groovy.version.major" value="2.0" />
+      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
     </antcall>
   </target>
 
@@ -218,6 +225,10 @@
     <antcall target="deploy">
       <param name="groovy.version.major" value="1.8" />
       <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+    </antcall>
+    <antcall target="deploy">
+      <param name="groovy.version.major" value="2.0" />
+      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
     </antcall>
   </target>
 	
