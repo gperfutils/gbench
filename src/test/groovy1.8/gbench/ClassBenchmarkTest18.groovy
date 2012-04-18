@@ -1,6 +1,6 @@
-package gbench
+package groovyx.gbench
 
-import gbench.BenchmarkTestUtilities as U
+import groovyx.gbench.BenchmarkTestUtilities as U
 
 import org.junit.Test
 

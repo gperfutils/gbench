@@ -1,0 +1,6 @@
+build/
+bin/
+dist/
+
+.classpath
+.project

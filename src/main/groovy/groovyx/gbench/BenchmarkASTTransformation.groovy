@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gbench;
+package groovyx.gbench;
 
 
 import groovy.lang.Closure
@@ -106,7 +106,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                     token '='
                     binary {
                         methodCall {
-                            classExpression gbench.BenchmarkSystem
+                            classExpression groovyx.gbench.BenchmarkSystem
                             constant 'isMeasureCpuTime'
                             argumentList()
                         }

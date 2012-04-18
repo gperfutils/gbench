@@ -1,4 +1,4 @@
-package gbench;
+package groovyx.gbench;
 
 public class BenchmarkSystem {
     

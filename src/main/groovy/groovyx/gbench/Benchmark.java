@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gbench;
+package groovyx.gbench;
 
 import groovy.lang.GroovyShell;
 
@@ -105,7 +105,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD, ElementType.TYPE})
-@GroovyASTTransformationClass("gbench.BenchmarkASTTransformation")
+@GroovyASTTransformationClass("groovyx.gbench.BenchmarkASTTransformation")
 public @interface Benchmark {
     public static interface BenchmarkHandler {
         public void handle(Object klass, Object method, Object time);
