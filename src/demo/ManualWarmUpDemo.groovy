@@ -1,4 +1,4 @@
-def bm = new gbench.BenchmarkBuilder().run(warmUpTime:3, verbose:true) {
+def bm = new groovyx.gbench.BenchmarkBuilder().run(warmUpTime:3, verbose:true) {
     'StringBuilder' {
         def sb = new StringBuilder()        
         sb.append('foo')
