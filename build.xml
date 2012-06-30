@@ -16,9 +16,11 @@
   <property name="groovy.1.7.version.minor" value="10" />
   <!-- groovy 1.8 -->
   <property name="groovy.1.8.version.minor" value="6" />
+  <!-- groovy 2.0 -->
+  <property name="groovy.2.0.version.minor" value="0" />
   <!-- default groovy -->
-  <property name="groovy.version.major" value="1.8" />
-  <property name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+  <property name="groovy.version.major" value="2.0" />
+  <property name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
 
   <!-- maven ant tasks -->
   <property name="maven.repo.url" value="http://repo1.maven.org/maven2" />
@@ -58,7 +60,7 @@
 
   <target name="javadoc" description="Create the javadoc archive." depends="-init-maven-tasks">
     <artifact:dependencies pathId="groovydoc.classpath">
-      <dependency groupId="org.codehaus.groovy" artifactId="groovy" version="${groovy.version.major}.${groovy.version.minor}" />
+      <dependency groupId="org.codehaus.groovy" artifactId="groovy-all" version="${groovy.version.major}.${groovy.version.minor}" />
     </artifact:dependencies>
     <taskdef name="groovydoc" classname="org.codehaus.groovy.ant.Groovydoc" classpathref="groovydoc.classpath" />
     <groovydoc destdir="${build.dir}/doc" sourcepath="${src.main.dir}" packagenames="**.*" use="true" private="false">
@@ -79,6 +81,10 @@
     <antcall target="binary">
       <param name="groovy.version.major" value="1.8" />
       <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+    </antcall>
+    <antcall target="binary">
+      <param name="groovy.version.major" value="2.0" />
+      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
     </antcall>
   </target>
 
@@ -102,7 +108,7 @@
     <mkdir dir="${classes.main.dir}" />
 
     <artifact:dependencies pathId="compile.classpath">
-      <dependency groupId="org.codehaus.groovy" artifactId="groovy" version="${groovy.version}" />
+      <dependency groupId="org.codehaus.groovy" artifactId="groovy-all" version="${groovy.version}" />
       <dependency groupId="commons-cli" artifactId="commons-cli" version="1.2" />
     </artifact:dependencies>
 
@@ -185,6 +191,10 @@
     <antcall target="test">
       <param name="groovy.version.major" value="1.8" />
       <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+    </antcall>
+    <antcall target="test">
+      <param name="groovy.version.major" value="2.0" />
+      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
     </antcall>
   </target>
 	
