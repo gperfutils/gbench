@@ -193,6 +193,10 @@
       <param name="groovy.version.major" value="1.8" />
       <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
     </antcall>
+    <antcall target="test">
+      <param name="groovy.version.major" value="2.0" />
+      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+    </antcall>
   </target>
   
   <target name="deploy" depends="-init-maven-tasks,binary" 
