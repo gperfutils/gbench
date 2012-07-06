@@ -20,6 +20,19 @@ class BenchmarkTime {
     long system
     long user
     
+    // I don't know why but named argument constructor does not work with
+    // static compilation.
+    BenchmarkTime(long real, long cpu, long system, long user) {
+        this.real = real
+        this.cpu = cpu
+        this.system = system
+        this.user = user
+    }
+    
+    BenchmarkTime(Map args) {
+        this((long) args.real, (long) args.cpu, (long) args.system, (long) args.user)
+    }
+    
     String toString() {
         "user:${user} system:${system} cpu:${cpu} real:${real}"
     } 
