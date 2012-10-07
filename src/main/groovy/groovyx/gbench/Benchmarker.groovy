@@ -14,11 +14,11 @@
  * limitations under the License.
  */package groovyx.gbench
 
-import groovy.transform.PackageScope
-
 import java.lang.management.ManagementFactory
 
-@PackageScope
+/* $if version >= 1.8.0 $ */
+@groovy.transform.PackageScope
+/* $endif$ */
 class Benchmarker {
     
     def options

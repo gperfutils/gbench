@@ -9,6 +9,7 @@
   <property name="src.test.dir" value="src/test" />
   <property name="lib.dir" value="lib" />
   <property name="build.dir" value="build" />
+  <property name="build.pp.main.dir" value="${build.dir}/pp/main" />
   <property name="dist.dir" value="dist" />
   <property name="install.dir" value="install" />
 
@@ -22,6 +23,20 @@
   <!-- default groovy -->
   <property name="groovy.version.major" value="2.0" />
   <property name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+
+  <!-- preprocessor (see: http://prebop.sourceforge.net/) -->
+  <taskdef name="preprocess" classname="com.objfac.prebop.ant.PreprocessorTask">
+    <classpath>
+      <pathelement location="${lib.dir}/preprocessor.jar"/>
+    </classpath>
+  </taskdef>
+
+  <target name="-preprocess">
+    <preprocess indir="${src.main.dir}" outdir="${build.pp.main.dir}" out="replace">
+      <var name="version" value="${groovy.version.major}.${groovy.version.minor}"/>
+      <filetype commentend="*/" commentbegin="/*" extensions="groovy"/>
+    </preprocess>
+  </target>
 
   <!-- maven ant tasks -->
   <property name="maven.repo.url" value="http://repo1.maven.org/maven2" />
@@ -64,7 +79,7 @@
       <dependency groupId="org.codehaus.groovy" artifactId="groovy-all" version="${groovy.version.major}.${groovy.version.minor}" />
     </artifact:dependencies>
     <taskdef name="groovydoc" classname="org.codehaus.groovy.ant.Groovydoc" classpathref="groovydoc.classpath" />
-    <groovydoc destdir="${build.dir}/doc" sourcepath="${src.main.dir}" packagenames="**.*" use="true" private="false">
+    <groovydoc destdir="${build.dir}/doc" sourcepath="${buld.pp.main.dir}" packagenames="**.*" use="true" private="false">
       <link packages="java.,org.xml.,javax.,org.xml." href="http://download.oracle.com/javase/6/docs/api" />
       <link packages="groovy.,org.codehaus.groovy." href="http://groovy.codehaus.org/api" />
       <link packages="org.apache.tools.ant." href="http://evgeny-goldin.org/javadoc/ant/api" />
@@ -101,7 +116,7 @@
     </jar>
   </target>
 
-  <target name="compile" description="Compile the main code." depends="-init-maven-tasks">
+  <target name="compile" description="Compile the main code." depends="-init-maven-tasks,-preprocess">
     <property name="groovy.version" value="${groovy.version.major}.${groovy.version.minor}" />
     <echo message="Compiling the main code with Groovy ${groovy.version}..." />
 
@@ -114,11 +129,11 @@
     </artifact:dependencies>
     
     <copy todir="${classes.main.dir}">
-      <fileset dir="${src.main.dir}" excludes="**/*.java,**/*.groovy"/>
+      <fileset dir="${build.pp.main.dir}" excludes="**/*.java,**/*.groovy"/>
     </copy>
 
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="compile.classpath" />
-    <groovyc srcdir="${src.main.dir}/groovy" destdir="${classes.main.dir}" classpathref="compile.classpath">
+    <groovyc srcdir="${build.pp.main.dir}/groovy" destdir="${classes.main.dir}" classpathref="compile.classpath">
       <javac source="1.5" target="1.5" debug="on" />
       <classpath>
         <pathelement path="${classes.main.dir}" />

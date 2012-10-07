@@ -14,15 +14,15 @@
  * limitations under the License.
  */package groovyx.gbench
 
-import groovy.transform.PackageScope
-
 /**
  * The class defines extension static methods.
  * 
  * @author Nagai Masato
  *
  */
-@PackageScope
+/* $if version >= 1.8.0 $ */
+@groovy.transform.PackageScope
+/* $endif$ */
 class BenchmarkStaticExtension {
     
     /**
