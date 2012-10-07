@@ -14,12 +14,15 @@
  * limitations under the License.
  */package groovyx.gbench
 
+import groovy.transform.PackageScope
+
 /**
  * The class defines extension methods.
  * 
  * @author Nagai Masato
  *
  */
+@PackageScope
 class BenchmarkExtension {
     
     /**

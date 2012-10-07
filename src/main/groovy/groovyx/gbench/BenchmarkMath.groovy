@@ -14,6 +14,9 @@
  * limitations under the License.
  */package groovyx.gbench
 
+import groovy.transform.PackageScope
+
+@PackageScope
 class BenchmarkMath {
     
     static double mean(List ns) {
