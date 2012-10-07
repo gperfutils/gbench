@@ -1,0 +1,4 @@
+moduleName = GBenchExtension
+moduleVersion = 1.0
+staticExtensionClasses = groovyx.gbench.BenchmarkStaticExtension
+extensionClasses = groovyx.gbench.BenchmarkExtension

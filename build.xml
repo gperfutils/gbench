@@ -13,15 +13,15 @@
   <property name="install.dir" value="install" />
 
   <!-- groovy 1.7 -->
-  <property name="groovy.1.7.version.minor" value="10" />
+  <property name="groovy.1.7.version.minor" value="11" />
   <!-- groovy 1.8 -->
-  <property name="groovy.1.8.version.minor" value="6" />
+  <property name="groovy.1.8.version.minor" value="8" />
   <!-- groovy 2.0 -->
-  <property name="groovy.2.0.version.minor" value="0" />
+  <property name="groovy.2.0.version.minor" value="5" />
 
   <!-- default groovy -->
-  <property name="groovy.version.major" value="1.8" />
-  <property name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+  <property name="groovy.version.major" value="2.0" />
+  <property name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
 
   <!-- maven ant tasks -->
   <property name="maven.repo.url" value="http://repo1.maven.org/maven2" />
@@ -112,6 +112,10 @@
       <dependency groupId="org.codehaus.groovy" artifactId="groovy-all" version="${groovy.version}" />
       <dependency groupId="commons-cli" artifactId="commons-cli" version="1.2" />
     </artifact:dependencies>
+    
+    <copy todir="${classes.main.dir}">
+      <fileset dir="${src.main.dir}" excludes="**/*.java,**/*.groovy"/>
+    </copy>
 
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="compile.classpath" />
     <groovyc srcdir="${src.main.dir}/groovy" destdir="${classes.main.dir}" classpathref="compile.classpath">
