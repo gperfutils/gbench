@@ -30,8 +30,11 @@ class BenchmarkBuilderTest {
     
     @Test void testStandard() {
         def benchmarks = new BenchmarkBuilder().run {
-            Thread.sleep(1000)
+            'foo' {
+                Thread.sleep(1000)
+            }
         }
+        assert benchmarks.size() == 1
         benchmarks.each { bm ->
             assert bm.label == 'foo'   
             assert bm.time.real > 0 
@@ -54,6 +57,7 @@ class BenchmarkBuilderTest {
                 Thread.sleep(50)
             }
         }
+        assert benchmarks.size() == 2
         assert benchmarks*.label == ['foo', 'bar']
         assert benchmarks.sort()*.label == ['bar', 'foo']
     }
