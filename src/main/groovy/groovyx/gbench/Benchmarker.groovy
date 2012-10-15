@@ -14,22 +14,27 @@
  * limitations under the License.
  */package groovyx.gbench
 
+import java.lang.management.CompilationMXBean;
+import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory
 
+/* $if version >= 2.0.0 $ */
+@groovy.transform.TypeChecked
+/* $endif$ */
 /* $if version >= 1.8.0 $ */
 @groovy.transform.PackageScope
 /* $endif$ */
 class Benchmarker {
     
-    def options
+    Map options
     
     private void cleanHeap() {
-        def rt = Runtime.runtime
-        def bu = rt.totalMemory() - rt.freeMemory()
+        Runtime rt = Runtime.runtime
+        long bu = rt.totalMemory() - rt.freeMemory()
         while (true) {
             System.runFinalization()
             System.gc()
-            def au = rt.totalMemory() - rt.freeMemory()
+            long au = rt.totalMemory() - rt.freeMemory()
             if (bu > au) {
                 bu = au
                 continue
@@ -53,16 +58,16 @@ class Benchmarker {
     }
     
     private long compilationTime() {
-        def bean = ManagementFactory.compilationMXBean
+        CompilationMXBean bean = ManagementFactory.compilationMXBean
         bean.isCompilationTimeMonitoringSupported() ?
             bean.totalCompilationTime * 1000 * 1000 /* ms -> ns */ : 0L
     }
     
     private long garbageCollectionTime() {
-        ManagementFactory.garbageCollectorMXBeans
-            .inject(0L) { total, b ->
+        ((long) ManagementFactory.garbageCollectorMXBeans
+            .inject(0L) { long total, GarbageCollectorMXBean b ->
                 total + b.collectionTime
-            } * 1000 * 1000 // ms -> ns
+            }) * 1000 * 1000 // ms -> ns
     }
     
     private long measurementTimeInterval() {
@@ -70,9 +75,9 @@ class Benchmarker {
     }
     
     private long computeExecutionTimes(Closure task) {
-        def times = 0
-        def ti = measurementTimeInterval()
-        def st = time()
+        long times = 0
+        long ti = measurementTimeInterval()
+        long st = time()
         while (true) {
             task()
             times++
@@ -83,17 +88,17 @@ class Benchmarker {
         times
     }
     
-    private def measure(long repeat, Closure task) {
+    private Map measure(long repeat, Closure task) {
         cleanHeap()
-        def bc = compilationTime()
-        def bct = cpuTime()
-        def but = userTime()
-        def bt = time()
+        long bc = compilationTime()
+        long bct = cpuTime()
+        long but = userTime()
+        long bt = time()
         repeat.times { task() }
-        def act = cpuTime()
-        def aut = userTime()
-        def at = time()
-        def ac = compilationTime()
+        long act = cpuTime()
+        long aut = userTime()
+        long at = time()
+        long ac = compilationTime()
         [ 
             executionTime: at - bt, 
             cpuTime: act - bct,
@@ -103,37 +108,41 @@ class Benchmarker {
         ]
     }
     
-    def run(label, Closure task) {
-        def log = {
-            if (!options.quiet && options.verbose) {
-                println(it); println()
-            }
+    private boolean warmedUp(long st, long dt) {
+        time() - st >= dt
+    }
+    
+    private boolean warmedUp(Map current, Map last) {
+        if (!(current && last)) {
+            false
+        } else {
+            !current.compilationTime && 
+                BenchmarkMath.rmdev(
+                    (long) current.executionTime, (long) last.executionTime) <= 0.005 /* 0.5% */
         }
-        def times = computeExecutionTimes(task)
-        def result
+    }
+    
+    private void log(String s) {
+        if (!options.quiet && options.verbose) {
+            println(s); println()
+        }
+    }
+    
+    Map run(label, Closure task) {
+        long times = computeExecutionTimes(task)
+        Map result
         if (0 <= options.warmUpTime) {
-            def warmUpTime = ((long) options.warmUpTime) * 1000 * 1000 * 1000 // s -> ns
-            def st = time()
-            def warmedUp = {
-                def b = time() - st >= warmUpTime
-            }
+            long dt = ((long) options.warmUpTime) * 1000 * 1000 * 1000 // s -> ns
+            long st = time()
             log("Warming up \"$label\"...")
-            while (!warmedUp()) {
+            while (!warmedUp(st, dt)) {
                 measure(times, task)
             }
             log("Measuring \"$label\"...")
             result = measure(times, task)
         } else {
             measure(1, task)
-            def warmedUp = { current, last ->
-                if (!(current && last)) {
-                    return false
-                }
-                !current.compilationTime && 
-                    BenchmarkMath.rmdev(
-                        [current.executionTime, last.executionTime]) <= 0.005 /* 0.5% */
-            }
-            def _result
+            Map _result
             log("Warming up \"$label\"...")
             while (!warmedUp(_result, result)) {
                 result = _result
@@ -145,10 +154,10 @@ class Benchmarker {
         return [
             label: label,
             time: new BenchmarkTime(
-                      real: result.executionTime / times,
-                      cpu: result.cpuTime / times,
-                      system: result.systemTime / times,
-                      user: result.userTime / times,
+                      real: ((long) result.executionTime) / times,
+                      cpu: ((long) result.cpuTime) / times,
+                      system: ((long) result.systemTime) / times,
+                      user: ((long) result.userTime) / times,
                   )
         ]
     } 

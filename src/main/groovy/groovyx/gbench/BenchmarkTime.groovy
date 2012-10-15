@@ -14,6 +14,9 @@
  * limitations under the License.
  */package groovyx.gbench
 
+/* $if version >= 2.0.0 $ */
+@groovy.transform.TypeChecked
+/* $endif$ */
 class BenchmarkTime {
     long real
     long cpu

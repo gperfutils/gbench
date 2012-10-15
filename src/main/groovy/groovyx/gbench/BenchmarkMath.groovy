@@ -14,41 +14,55 @@
  * limitations under the License.
  */package groovyx.gbench
 
+/* $if version >= 2.0.0 $ */
+@groovy.transform.TypeChecked
+/* $endif$ */
 /* $if version >= 1.8.0 $ */
 @groovy.transform.PackageScope
 /* $endif$ */
 class BenchmarkMath {
     
-    static double mean(List ns) {
-        ns.sum() / ns.size()
+    /**
+     * Calculates arithmetic mean.
+     */
+    static double mean(long a, long b) {
+        (a + b) / 2
     }
     
-    static double mdev(List ns) {
-        if (ns.empty) {
-            return
-        }
-        def m = mean(ns)
-        def sum = ns.inject(0d) { sum, n ->
-            sum += Math.abs(n - m)
-        }
-        sum / ns.size()
+    /**
+     * Calculates mean deviation.
+     */
+    static double mdev(long a, long b) {
+        mdev(a, b, mean(a, b))
     }
     
-    static double rmdev(List ns) {
-        def m = mean(ns)
-        mdev(ns) / m
+    /**
+     * Calculates mean deviation.
+     */
+    static double mdev(long a, long b, double m) {
+        (Math.abs(a - m) + Math.abs(b - m)) / 2
     }
     
-    static double stdev(List ns) {
-        if (ns.empty) {
-            return
-        }
-        def m = mean(ns)
-        def sum = ns.inject(0d) { sum, n ->
-            def diff = n - m
-            sum += diff * diff
-        }
-        Math.sqrt(sum / ns.size())
+    /**
+     * Calculates relative mean deviation.
+     */
+    static double rmdev(long a, long b) {
+        double m = mean(a, b)
+        mdev(a, b, m) / m
+    }
+    
+    /**
+     * Calculates standard deviation.
+     */
+    static double stdev(long a, long b) {
+        stdev(a, b, mean(a, b))
+    }
+    
+    /**
+     * Calculates standard deviation.
+     */
+    static double stdev(long a, long b, double m) {
+        Math.sqrt(((a - m) * (a - m) + (b - m) * (b - m)) / 2)
     }
 
 }
