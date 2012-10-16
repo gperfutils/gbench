@@ -14,4 +14,5 @@ class ClassBenchmarkTest {
     @Test void testUseClassBenchmark() {
         U.defaultAssert(U.firstLine(U.callAndGetStdout({useClassBenchmark()})))
     }
+    
 }

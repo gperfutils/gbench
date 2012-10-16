@@ -29,3 +29,21 @@ void testUseCustomHandler() {
     useCustomHandler()
     U.customAssert(CustomBenchmarkHandler.instance.result)
 }
+
+/* $if version >= 1.8.0 $ */
+@Benchmark({System.out.println("${klass} of ${method}\t${time}")})
+def useClosureHandler() {
+    U.simulateOperation()
+}
+@Test void testUseClosureHandler() {
+    U.customAssert(U.firstLine(U.callAndGetStdout({useClosureHandler()})))
+}
+
+@Benchmark({System.out.println("${klass} of ${method}\t${time}")})
+def useClosureHandlerWithDupArgs(method, time) {
+    U.simulateOperation()
+}
+@Test void testUseClosureHandlerWithDupArgs() {
+    U.customAssert(U.firstLine(U.callAndGetStdout({useClosureHandlerWithDupArgs('foo', 'bar')})))
+}
+/* $endif$ */

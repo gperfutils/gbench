@@ -17,4 +17,13 @@ class ScriptBenchmarkTest {
     @Test void testUseCustomHandler() {
         proxy.testUseCustomHandler()
     }
+    
+/* $if version >= 1.8.0 $ */
+    @Test void testUseClosureHandler() {
+    }
+    
+    @Test void testUseClosureHandlerWithDupArgs() {
+    }
+/* $endif$ */
+    
 }

@@ -9,7 +9,6 @@
   <property name="src.test.dir" value="src/test" />
   <property name="lib.dir" value="lib" />
   <property name="build.dir" value="build" />
-  <property name="build.pp.main.dir" value="${build.dir}/pp/main" />
   <property name="dist.dir" value="dist" />
   <property name="install.dir" value="install" />
 
@@ -32,7 +31,7 @@
   </taskdef>
 
   <target name="-preprocess">
-    <preprocess indir="${src.main.dir}" outdir="${build.pp.main.dir}" out="replace">
+    <preprocess indir="${pp.src.dir}" outdir="${pp.dst.dir}" out="replace">
       <var name="version" value="${groovy.version.major}.${groovy.version.minor}"/>
       <filetype commentend="*/" commentbegin="/*" extensions="groovy"/>
     </preprocess>
@@ -135,7 +134,14 @@
     </jar>
   </target>
 
-  <target name="compile" description="Compile the main code." depends="-init-maven-tasks,-preprocess">
+  <target name="compile" description="Compile the main code." depends="-init-maven-tasks">
+    <property name="build.src.main.dir" value="${build.dir}/src/main" />
+
+    <antcall target="-preprocess">
+      <param name="pp.src.dir" value="${src.main.dir}" />
+      <param name="pp.dst.dir" value="${build.src.main.dir}" />
+    </antcall>
+
     <property name="groovy.version" value="${groovy.version.major}.${groovy.version.minor}" />
     <echo message="Compiling the main code with Groovy ${groovy.version}..." />
 
@@ -146,13 +152,13 @@
       <dependency groupId="org.codehaus.groovy" artifactId="groovy-all" version="${groovy.version}" />
       <dependency groupId="commons-cli" artifactId="commons-cli" version="1.2" />
     </artifact:dependencies>
-    
+
     <copy todir="${classes.main.dir}">
-      <fileset dir="${build.pp.main.dir}" excludes="**/*.java,**/*.groovy"/>
+      <fileset dir="${build.src.main.dir}" excludes="**/*.java,**/*.groovy"/>
     </copy>
 
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="compile.classpath" />
-    <groovyc srcdir="${build.pp.main.dir}/groovy" destdir="${classes.main.dir}" classpathref="compile.classpath">
+    <groovyc srcdir="${build.src.main.dir}/groovy" destdir="${classes.main.dir}" classpathref="compile.classpath">
       <javac source="1.5" target="1.5" debug="on" />
       <classpath>
         <pathelement path="${classes.main.dir}" />
@@ -163,49 +169,33 @@
     </antcall>
   </target>
 
-  <target name="-init-compile-test">
+  <target name="compile-test" description="Compile the test code." depends="compile">
     <property name="groovy.version" value="${groovy.version.major}.${groovy.version.minor}" />
     <echo message="Compiling the test code with Groovy ${groovy.version}..." />
+
+    <property name="build.src.test.dir" value="${build.dir}/src/test" />
+
+    <antcall target="-preprocess">
+      <param name="pp.src.dir" value="${src.test.dir}" />
+      <param name="pp.dst.dir" value="${build.src.test.dir}" />
+    </antcall>
 
     <artifact:dependencies pathId="compile.classpath">
       <dependency groupId="org.codehaus.groovy" artifactId="groovy" version="${groovy.version}" />
       <dependency groupId="junit" artifactId="junit" version="4.8.2" />
       <dependency groupId="commons-cli" artifactId="commons-cli" version="1.2" />
     </artifact:dependencies>
-    
+
     <property name="classes.test.dir" value="${build.dir}/${groovy.version.major}/test/classes" />
     <mkdir dir="${classes.test.dir}" />
-  </target>
-  
-  <target name="-check-version-specific-test">
-      <available property="version.specific.test.exists" 
-                 type="dir" file="${src.test.dir}/groovy${groovy.version.major}"/>
-  </target>
-  
-  <target name="-compile-version-specific-test" 
-          depends="-check-version-specific-test,-init-compile-test"
-          if="version.specific.test.exists">
-    <echo message="Compiling the test code for/with Groovy ${groovy.version}..." />
-    <groovyc srcdir="${src.test.dir}/groovy${groovy.version.major}" 
-             destdir="${classes.test.dir}" classpathref="compile.classpath">
+
+    <groovyc srcdir="${build.src.test.dir}/groovy" destdir="${classes.test.dir}" classpathref="compile.classpath">
       <javac source="1.5" target="1.5" debug="on" />
       <classpath>
         <pathelement path="${classes.main.dir}" />
         <pathelement path="${classes.test.dir}" />
       </classpath>
     </groovyc>
-  </target>
-  
-  <target name="compile-test" depends="compile,-init-compile-test" description="Compile the test code.">
-    <groovyc srcdir="${src.test.dir}/groovy" destdir="${classes.test.dir}" classpathref="compile.classpath">
-      <javac source="1.5" target="1.5" debug="on" />
-      <classpath>
-        <pathelement path="${classes.main.dir}" />
-        <pathelement path="${classes.test.dir}" />
-      </classpath>
-    </groovyc>
-    
-    <antcall target="-compile-version-specific-test" />
   </target>
 
   <target name="test" description="Compile and run the test code." depends="compile-test">
@@ -219,7 +209,6 @@
       <batchtest>
         <fileset dir="${classes.test.dir}">
           <include name="**/*Test.class" />
-          <include name="**/*Test18.class" />
         </fileset>
       </batchtest>
     </junit>
