@@ -12,11 +12,11 @@ class ExtensionTest {
         def bmList = { -> 
             'foo' {}    
             'bar' {}
-        }.benchmark(measureCpuTime:0, warmUpTime:0)        
+        }.benchmark(measureCpuTime:0, warmUpTime:0, quiet: true)        
     }
     
     @Test void testObjectStaticTest() {
-        def bmList = benchmark(measureCpuTime:0, warmUpTime:0) {
+        def bmList = benchmark(measureCpuTime:0, warmUpTime:0, quiet: true) {
             'foo' {}    
             'bar' {}
         }    

@@ -16,8 +16,6 @@
 
 class BenchmarkList extends ArrayList {
     
-    def options
-
     /**
      * Sorts by real time.
      * 
@@ -33,7 +31,7 @@ class BenchmarkList extends ArrayList {
      * @param writer a print writer.
      */
     def prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
-        if (!options.measureCpuTime) {
+        if (!BenchmarkContext.get().measureCpuTime) {
             def w = inject([ label: 1, real: 1 ]) { w, bm ->
                 [ label: Math.max(w.label, bm.label.size()),
                     real: Math.max(w.real, bm.time.real.toString().size()) ]    

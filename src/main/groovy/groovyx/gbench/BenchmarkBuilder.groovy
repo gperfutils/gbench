@@ -62,7 +62,6 @@ class BenchmarkBuilder {
     public static int AUTO = -1;
 
     BenchmarkList benchmarks
-    Map options
 
     /**
      * Gets benchmarks.
@@ -84,7 +83,7 @@ class BenchmarkBuilder {
     }
     
     private doRun(Closure clos) {
-        benchmarks = new BenchmarkList(options: this.options)
+        benchmarks = new BenchmarkList()
         clos.resolveStrategy = Closure.DELEGATE_FIRST
         clos.delegate = this
         clos()
@@ -94,37 +93,34 @@ class BenchmarkBuilder {
     private void setOptions(options) {
         def cpuTimeSupported = 
             ManagementFactory.threadMXBean.currentThreadCpuTimeSupported
-        this.options = [ 
-            // default values
-            measureCpuTime: cpuTimeSupported,
-            warmUpTime: AUTO,
-            quiet: false,
-            verbose: false
-        ] 
-        // `this.options = defaults + options` doesn't work in Groovy 1.7.
-        this.options += options
+        Map context = [
+            measureCpuTime : cpuTimeSupported,
+            warmUpTime : AUTO,
+            quiet : false,
+            verbose : false]
+        context += options
         if (options.measureCpuTime && !cpuTimeSupported) {
-            System.err.println "The JVM doesn't support CPU time measurement."    
-            this.options.measureCpuTime = false
+            BenchmarkLogger.error("The JVM doesn't support CPU time measurement.")
+            context.measureCpuTime = false
         }
+        BenchmarkContext.set(context)
     }
     
     private def printOption() {
-        if (options.quiet) return
-        println """\
+        def options = BenchmarkContext.get()
+        BenchmarkLogger.info("""\
             Options
             =======
             * Warm Up: ${AUTO == options.warmUpTime ? 
                 'Auto' : options.warmUpTime + ' sec'} 
             * CPU Time Measurement: ${options.measureCpuTime ? 'On' : 'Off' }
-        """.stripIndent()        
+        """.stripIndent())    
     }
     
     private def printEnv() {
-        if (options.quiet) return
         def jvm = System.&getProperty
         def rt = Runtime.runtime
-        println """\
+        BenchmarkLogger.info("""\
             Environment
             ===========
             * Groovy: ${GroovySystem.version}
@@ -133,7 +129,7 @@ class BenchmarkBuilder {
                 * Total Memory: ${rt.totalMemory() / 1024 / 1024 + ' MB'}
                 * Maximum Memory: ${rt.maxMemory() / 1024 / 1024 + ' MB'}
             * OS: ${jvm('os.name')} (${jvm('os.version')}, ${jvm('os.arch')}) 
-        """.stripIndent()    
+        """.stripIndent()) 
     }
 
     /**
@@ -146,7 +142,7 @@ class BenchmarkBuilder {
      * @param clos a code block.
      */
     def with(String label, Closure clos) {
-        benchmarks << new Benchmarker(options: this.options).run(label, clos)
+        benchmarks << Benchmarker.run(label, clos)
     }
 
     String toString() {
