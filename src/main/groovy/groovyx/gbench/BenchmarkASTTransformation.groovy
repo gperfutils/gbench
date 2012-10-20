@@ -108,8 +108,8 @@ class BenchmarkASTTransformation implements ASTTransformation {
                  * }
                  * try {
                  *     // original code
-                 * } catch {
-                 *     long __gbench_real = System.nanoTime - __gbench_bReal
+                 * } finally {
+                 *     long __gbench_real = System.nanoTime() - __gbench_bReal
                  *     long __gbench_cpu = 0
                  *     long __gbench_user = 0
                  *     long __gbench_system = 0
