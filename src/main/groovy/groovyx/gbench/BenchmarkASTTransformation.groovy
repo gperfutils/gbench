@@ -15,13 +15,7 @@
  */
 package groovyx.gbench;
 
-
-import groovy.lang.Closure
-import groovy.lang.GroovyObjectSupport
-
 import java.lang.management.ManagementFactory
-import java.util.Arrays
-import java.util.Map
 
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotatedNode
@@ -33,10 +27,7 @@ import org.codehaus.groovy.ast.builder.AstBuilder
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ClosureExpression
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression
-import org.codehaus.groovy.ast.expr.TupleExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.ast.stmt.Statement
@@ -96,293 +87,249 @@ class BenchmarkASTTransformation implements ASTTransformation {
             transform(method, benchmark);
         }
     }
+    
    
     void transform(MethodNode method, AnnotationNode benchmark) {
         if (!(method.code instanceof BlockStatement)) {
             return
         }
-        def statements = new AstBuilder().buildFromSpec {
-            expression {
-                declaration {
-                    owner.expression.add(new VariableExpression(
-                            '__gbench_measureCpuTime', ClassHelper.make(boolean.class)
-                        ))
-                    token '='
-                    binary {
-                        methodCall {
-                            classExpression groovyx.gbench.BenchmarkSystem
-                            constant 'isMeasureCpuTime'
+        def statements = 
+            new BenchmarkASTBuilder().build {[
+                /*
+                 * ThreadMXBean __gbench_mxBean = ManagementFactory.getThreadMXBean()
+                 * boolean __gbench_measureCpuTime =
+                 *     BenchmarkSystem.isMeasureCpuTime() && __gbench_mxBean.isCurrentThreadCpuTimeSupported()
+                 * long __gbench_bReal = System.nanoTime()
+                 * long __gbench_bCpu = 0
+                 * long __gbench_bUser = 0
+                 * if (__gbench_measureCpuTime) {
+                 *     __gbench_bCpu = __gbench_mxBean.getCurrentThreadCpuTime()
+                 *     __gbench_bUser = __gbench_mxBean.getCurrentThreadUserTime()
+                 * }
+                 * try {
+                 *     // original code
+                 * } catch {
+                 *     long __gbench_real = System.nanoTime - __gbench_bReal
+                 *     long __gbench_cpu = 0
+                 *     long __gbench_user = 0
+                 *     long __gbench_system = 0
+                 *     if (__gbench_measureCpuTime) {
+                 *         __gbench_cpu = __gbench_mxBean.getCurrentThreadCpuTime() - __gbench_bCpu
+                 *         __gbench_user = __gbench_mxBean.getCurrentThreadUserTime() - __gbench_bUser
+                 *         __gbench_system = __gbench_cpu - __gbench_user
+                 *     }
+                 *     BenchmarkTime __gbench_time = 
+                 *          new BenchmarkTime(__gbench_real, __gbench_cpu, __gbench_system, __gbench_user)
+                 *     String __gbench_class = "className"
+                 *     String __gbench_method = "methodDescription"
+                 * }
+                 */
+                expression(
+                    declaration(
+                        variable('__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)),
+                        token('='),
+                        methodCall(
+                            classExpression(java.lang.management.ManagementFactory),
+                            constant('getThreadMXBean'),
                             argumentList()
-                        }
-                        token '&&'
-                        methodCall {
-                            classExpression java.lang.management.ManagementFactory
-                            constant 'getThreadMXBean'
+                        )
+                    )
+                ),
+                expression(
+                    declaration(
+                        variable('__gbench_measureCpuTime', ClassHelper.make(boolean)),
+                        token('='),
+                        binary(
+                            methodCall(
+                                classExpression(groovyx.gbench.BenchmarkSystem),
+                                constant('isMeasureCpuTime'),
+                                argumentList()
+                            ),
+                            token('&&'),
+                            methodCall(
+                                variable('__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)),
+                                constant('isCurrentThreadCpuTimeSupported'),
+                                argumentList()
+                            )
+                        ) 
+                    )
+                ),
+                expression(
+                    declaration(
+                        variable('__gbench_bReal', ClassHelper.make(long)),
+                        token('='),
+                        methodCall(
+                            classExpression(System.class),
+                            constant('nanoTime'),
                             argumentList()
-                        }
-                    }
-                }
-            }
-            expression {
-                declaration {
-                    owner.expression.add(new VariableExpression(
-                            '__gbench_bReal', ClassHelper.make(long.class)
-                        ))
-                    token '='
-                    methodCall {
-                        classExpression System
-                        constant 'nanoTime'
-                        argumentList()
-                    }
-                }
-            }
-            expression {
-                declaration {
-                    owner.expression.add(new VariableExpression(
-                            '__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)
-                        ))
-                    token '='
-                    constant()
-                }
-            }
-            expression {
-                declaration {
-                    owner.expression.add(new VariableExpression(
-                            '__gbench_bCpu', ClassHelper.make(long.class)
-                        ))
-                    token '='
-                    constant 0
-                }
-            }
-            expression {
-                declaration {
-                    owner.expression.add(new VariableExpression(
-                            '__gbench_bUser', ClassHelper.make(long.class)
-                        ))
-                    token '='
-                    constant 0
-                }
-            }
-            ifStatement {
-                booleanExpression {
-                    owner.expression.add(new VariableExpression(
-                            '__gbench_measureCpuTime', ClassHelper.make(boolean.class)
-                        ))
-                }    
-                block {
-                    expression {
-                        binary {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)
-                                ))
-                            token '='
-                            methodCall {
-                                classExpression java.lang.management.ManagementFactory
-                                constant 'getThreadMXBean'
-                                argumentList()
-                            }
-                        }
-                    }
-                    expression {
-                        binary {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_bCpu', ClassHelper.make(long.class)
-                                ))
-                            token '='
-                            methodCall {
-                                owner.expression.add(new VariableExpression(
-                                        '__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)
-                                    ))
-                                constant 'getCurrentThreadCpuTime'
-                                argumentList()
-                            }
-                        }
-                    }
-                    expression {
-                        binary {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_bUser', ClassHelper.make(long.class)
-                                ))
-                            token '='
-                            methodCall {
-                                owner.expression.add(new VariableExpression(
-                                        '__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)
-                                    ))
-                                constant 'getCurrentThreadUserTime'
-                                argumentList()
-                            }
-                        }
-                    }
-                }
-                empty()
-            }
-            tryCatch {
-                block {
-                    owner.expression.addAll method.code.statements    
-                }
-                block {
-                    expression {
-                        declaration {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_cpu', ClassHelper.make(long.class)
-                                ))
-                            token '='
-                            constant 0
-                        }
-                    }
-                    expression {
-                        declaration {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_user', ClassHelper.make(long.class)
-                                ))
-                            token '='
-                            constant 0
-                        }
-                    }
-                    expression {
-                        declaration {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_system', ClassHelper.make(long.class)
-                                ))
-                            token '='
-                            constant 0
-                        }
-                    }
-                    ifStatement {
-                        booleanExpression {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_measureCpuTime', ClassHelper.make(boolean.class)
-                                ))
-                        }    
-                        block {
-                            expression {
-                                binary {
-                                    owner.expression.add(new VariableExpression(
-                                            '__gbench_user', ClassHelper.make(long.class)
-                                        ))
-                                    token '='
-                                    binary {
-                                        methodCall {
-                                            owner.expression.add(new VariableExpression(
-                                                    '__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)
-                                                ))
-                                            constant 'getCurrentThreadUserTime'
-                                            argumentList()
-                                        }
-                                        token '-'
-                                        owner.expression.add(new VariableExpression(
-                                                '__gbench_bUser', ClassHelper.make(long.class)
-                                            ))
-                                    }
-                                }
-                            }    
-                            expression {
-                                binary {
-                                    owner.expression.add(new VariableExpression(
-                                            '__gbench_cpu', ClassHelper.make(long.class)
-                                        ))
-                                    token '='
-                                    binary {
-                                        methodCall {
-                                            owner.expression.add(new VariableExpression(
-                                                    '__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)
-                                                ))
-                                            constant 'getCurrentThreadCpuTime'
-                                            argumentList()
-                                        }
-                                        token '-'
-                                        owner.expression.add(new VariableExpression(
-                                                '__gbench_bCpu', ClassHelper.make(long.class)
-                                            ))
-                                    }
-                                }
-                            }    
-                            expression {
-                                binary {
-                                    owner.expression.add(new VariableExpression(
-                                            '__gbench_system', ClassHelper.make(long.class)
-                                        ))
-                                    token '='
-                                    binary {
-                                        owner.expression.add(new VariableExpression(
-                                                '__gbench_cpu', ClassHelper.make(long.class)
-                                            ))
-                                        token '-'
-                                        owner.expression.add(new VariableExpression(
-                                                '__gbench_user', ClassHelper.make(long.class)
-                                            ))
-                                    }
-                                }
-                            }    
-                        }
-                        empty()
-                    }
-                    expression {
-                        declaration {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_real', ClassHelper.make(long.class)
-                                ))
-                            token '='
-                            binary {
-                                methodCall {
-                                    classExpression System
-                                    constant 'nanoTime'
+                        )
+                    )
+                ),
+                expression(
+                    declaration(
+                        variable('__gbench_bCpu', ClassHelper.make(long)),
+                        token('='),
+                        constant(0)
+                    )
+                ),
+                expression(
+                    declaration(
+                        variable('__gbench_bUser', ClassHelper.make(long)),
+                        token('='),
+                        constant(0)
+                    )
+                ),
+                ifStatement(
+                    booleanExpression(
+                        variable('__gbench_measureCpuTime', ClassHelper.make(boolean)),
+                    ),    
+                    block(
+                        expression(
+                            binary(
+                                variable('__gbench_bCpu', ClassHelper.make(long)),
+                                token('='),
+                                methodCall(
+                                    variable('__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)),
+                                    constant('getCurrentThreadCpuTime'),
                                     argumentList()
-                                }
-                                token '-'
-                                owner.expression.add(new VariableExpression(
-                                        '__gbench_bReal', ClassHelper.make(long.class)
-                                    ))
-                            }
-                        }
-                    }    
-                    expression {
-                        declaration {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_time', ClassHelper.make(BenchmarkTime.class)
-                                ))
-                            token '='
-                            owner.expression.add(new ConstructorCallExpression(
-                                ClassHelper.make(BenchmarkTime.class),
-                                new TupleExpression(Arrays.asList(
-                                    new VariableExpression(
-                                        '__gbench_real', ClassHelper.make(long.class)
+                                )
+                            )
+                        ),
+                        expression(
+                            binary(
+                                variable('__gbench_bUser', ClassHelper.make(long)),
+                                token('='),
+                                methodCall(
+                                    variable('__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)),
+                                    constant('getCurrentThreadUserTime'),
+                                    argumentList()
+                                )
+                            )
+                        )
+                    ),
+                    empty()
+                ),
+                tryCatch(
+                    block(method.code.statements),
+                    block(
+                        expression(
+                            declaration(
+                                variable('__gbench_real', ClassHelper.make(long)),
+                                token('='),
+                                binary(
+                                    methodCall(
+                                        classExpression(System.class),
+                                        constant('nanoTime'),
+                                        argumentList()
                                     ),
-                                    new VariableExpression(
-                                        '__gbench_cpu', ClassHelper.make(long.class)
-                                    ),
-                                    new VariableExpression(
-                                        '__gbench_system', ClassHelper.make(long.class)
-                                    ),
-                                    new VariableExpression(
-                                        '__gbench_user', ClassHelper.make(long.class)
+                                    token('-'),
+                                    variable('__gbench_bReal', ClassHelper.make(long))
+                                )
+                            )
+                        ),
+                        expression(
+                            declaration(
+                                variable('__gbench_cpu', ClassHelper.make(long)),
+                                token('='),
+                                constant(0)
+                            )
+                        ),
+                        expression(
+                            declaration(
+                                variable('__gbench_user', ClassHelper.make(long)),
+                                token('='),
+                                constant(0)
+                            )
+                        ),
+                        expression(
+                            declaration(
+                                variable('__gbench_system', ClassHelper.make(long)),
+                                token('='),
+                                constant(0)
+                            )
+                        ),
+                        ifStatement(
+                            booleanExpression(
+                                variable('__gbench_measureCpuTime', ClassHelper.make(boolean)),
+                            ),    
+                            block(
+                                expression(
+                                    binary(
+                                        variable('__gbench_cpu', ClassHelper.make(long)),
+                                        token('='),
+                                        binary(
+                                            methodCall(
+                                                variable('__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)),
+                                                constant('getCurrentThreadCpuTime'),
+                                                argumentList()
+                                            ),
+                                            token('-'),
+                                            variable('__gbench_bCpu', ClassHelper.make(long))
+                                        )
                                     )
-                                ))
-                            ))
-                        }
-                    }    
-                    expression {
-                        declaration {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_class', ClassHelper.make(String.class)
-                                ))
-                            token '='
-                            constant(method.declaringClass.name)
-                        }
-                    }
-                    expression {
-                        declaration {
-                            owner.expression.add(new VariableExpression(
-                                    '__gbench_method', ClassHelper.make(String.class)
-                                ))
-                            token '='
-                            constant(method.typeDescriptor)
-                        }
-                    }
-                    owner.expression.addAll handleBenchmark(benchmark)
-                }
-            }
-        }
+                                ),    
+                                expression(
+                                    binary(
+                                        variable('__gbench_user', ClassHelper.make(long)),
+                                        token('='),
+                                        binary(
+                                            methodCall(
+                                                variable('__gbench_mxBean', ClassHelper.make(java.lang.management.ThreadMXBean.class)),
+                                                constant('getCurrentThreadUserTime'),
+                                                argumentList()
+                                            ),
+                                            token('-'),
+                                            variable('__gbench_bUser', ClassHelper.make(long))
+                                        )
+                                    )
+                                ),    
+                                expression(
+                                    binary(
+                                        variable('__gbench_system', ClassHelper.make(long)),
+                                        token('='),
+                                        binary(
+                                            variable('__gbench_cpu', ClassHelper.make(long)),
+                                            token('-'),
+                                            variable('__gbench_user', ClassHelper.make(long))
+                                        )
+                                    )
+                                )    
+                            ),
+                            empty()
+                        ),
+                        expression(
+                            declaration(
+                                variable('__gbench_time', ClassHelper.make(BenchmarkTime.class)),
+                                token('='),
+                                constructorCall(
+                                    ClassHelper.make(BenchmarkTime.class),
+                                    tuple([
+                                        variable('__gbench_real', ClassHelper.make(long)),
+                                        variable('__gbench_cpu', ClassHelper.make(long)),
+                                        variable('__gbench_system', ClassHelper.make(long)),
+                                        variable('__gbench_user', ClassHelper.make(long))
+                                    ])
+                                )
+                            )
+                        ),    
+                        expression(
+                            declaration(
+                                variable('__gbench_class', ClassHelper.make(String.class)),
+                                token('='),
+                                constant(method.declaringClass.name)
+                            )
+                        ),
+                        expression(
+                            declaration(
+                                variable('__gbench_method', ClassHelper.make(String.class)),
+                                token('='),
+                                constant(method.typeDescriptor)
+                            )
+                        ),
+                        handleBenchmark(benchmark)
+                    ) 
+                )
+            ]}
         method.code.statements.clear()
         method.code.statements += statements
     }
@@ -393,77 +340,66 @@ class BenchmarkASTTransformation implements ASTTransformation {
         if (!handleExpression || handleExpression instanceof ClassExpression) {
             def handleClass = handleExpression ? 
                                 handleExpression.type : DEFAULT_HANDLER_TYPE
-            handleStatement = new AstBuilder().buildFromSpec({
-                expression {
-                    methodCall {
-                        owner.expression << 
-                            new StaticMethodCallExpression(
-                                handleClass,
-                                'getInstance',
-                                ArgumentListExpression.EMPTY_ARGUMENTS
-                            )
-                        // staticMethodCall (handleClass.typeClass, 'getInstance') {
-                        //     argumentList()
-                        // }
-                        constant 'handle'
-                        argumentList {
-                            variable '__gbench_class'    
-                            variable '__gbench_method'
-                            variable '__gbench_time'
-                        }
-                    }    
-                }
-            })[0]
+            handleStatement = new BenchmarkASTBuilder().build({
+                expression(
+                    methodCall(
+                        staticMethodCall(
+                            handleClass,
+                            'getInstance',
+                            argumentList()
+                        ),
+                        constant('handle'),
+                        argumentList(
+                            variable('__gbench_class'),
+                            variable('__gbench_method'),
+                            variable('__gbench_time')
+                        )
+                    )    
+                )
+            })
         } else if (handleExpression instanceof ClosureExpression) {
-            def statements = new AstBuilder().buildFromSpec({
-                expression {
-                    declaration {
-                        variable 'klass'
-                        token '='
-                        variable '__gbench_class'
-                    }
-                }
-                expression {
-                    declaration {
-                        variable 'method'
-                        token '='
-                        variable '__gbench_method'
-                    }
-                }
-                expression {
-                    declaration {
-                        variable 'time'
-                        token '='
-                        variable '__gbench_time'
-                    }
-                }
-            }) + handleExpression.code.statements
+            def statements = new BenchmarkASTBuilder().build({[
+                expression(
+                    declaration(
+                        variable('klass'),
+                        token('='),
+                        variable('__gbench_class')
+                    )
+                ),
+                expression(
+                    declaration(
+                        variable('method'),
+                        token('='),
+                        variable('__gbench_method')
+                    )
+                ),
+                expression(
+                    declaration(
+                        variable('time'),
+                        token('='),
+                        variable('__gbench_time')
+                    )
+                )
+            ]}) + handleExpression.code.statements
             handleExpression.code.statements.clear()
             handleExpression.code.statements += statements
             
-            handleStatement = new AstBuilder().buildFromSpec({
-                expression {
-                    methodCall {
-                        owner.expression << 
-                            new ConstructorCallExpression(
-                                CLOSURE_HANDLER_TYPE,
-                                new ArgumentListExpression(
-                                    (ClosureExpression) handleExpression)
-                            )
-                        // constructorCall(CLOSURE_HANDLER_TYPE.typeClass) {
-                        //     argumentList {
-                        //         (ClosureExpression) handleExp
-                        //     }
-                        // }
-                        constant 'handle'
-                        argumentList {
-                            variable '__gbench_class'    
-                            variable '__gbench_method'
-                            variable '__gbench_time'
-                        }
-                    }
-                }
-            })[0]
+            handleStatement = new BenchmarkASTBuilder().build({
+                expression(
+                    methodCall(
+                        constructorCall(
+                            CLOSURE_HANDLER_TYPE,
+                            argumentList((ClosureExpression) handleExpression)
+                        ),
+                        constant('handle'),
+                        argumentList(
+                            variable('__gbench_class'),
+                            variable('__gbench_method'),
+                            variable('__gbench_time')
+                        )
+                    )
+                )
+            })
         } else {
             handleStatement = EmptyStatement.INSTANCE
         }
