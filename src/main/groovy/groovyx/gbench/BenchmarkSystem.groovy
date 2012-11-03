@@ -14,9 +14,6 @@
  * limitations under the License.
  */package groovyx.gbench;
 
-/* $if version >= 1.8.0 $ */
-@groovy.transform.PackageScope
-/* $endif$ */
 class BenchmarkSystem {
     
     public static boolean isMeasureCpuTime() {

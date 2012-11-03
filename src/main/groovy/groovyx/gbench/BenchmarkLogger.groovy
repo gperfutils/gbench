@@ -18,9 +18,6 @@ package groovyx.gbench
 /* $if version >= 2.0.0 $ */
 @groovy.transform.TypeChecked
 /* $endif$ */
-/* $if version >= 1.8.0 $ */
-@groovy.transform.PackageScope
-/* $endif$ */
 class BenchmarkLogger {
     
     static void error(String s) {

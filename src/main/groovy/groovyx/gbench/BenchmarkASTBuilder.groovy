@@ -21,9 +21,6 @@ import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 
-/* $if version >= 1.8.0 $ */
-@groovy.transform.PackageScope
-/* $endif$ */
 class BenchmarkASTBuilder {
     
     private static Map AST_CLASSES = [

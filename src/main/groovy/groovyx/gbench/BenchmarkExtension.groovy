@@ -20,9 +20,6 @@
  * @author Nagai Masato
  *
  */
-/* $if version >= 1.8.0 $ */
-@groovy.transform.PackageScope
-/* $endif$ */
 class BenchmarkExtension {
     
     /**
