@@ -35,20 +35,20 @@ class BenchmarkWarmUp {
     }
 
     static void run(Closure task, long execTimes) {
-    	if (0 <= BenchmarkContext.get().warmUpTime) {
-    		long dt = ((int) BenchmarkContext.get().warmUpTime) * 1000L * 1000 * 1000 // s -> ns
-    		long st = BenchmarkMeasure.time()
-    		while (!timeUp(st, dt)) {
-    			BenchmarkMeasure.run(task, execTimes)
-    		}
-    	} else {
-    		BenchmarkMeasure.run(task, 1)
-    		Map bm, lbm
-    		while (!stable(bm, lbm)) {
-    			lbm = bm
-    			bm = BenchmarkMeasure.run(task, execTimes)
-    		}
-    	}
+        if (0 <= (int) BenchmarkContext.get().warmUpTime) {
+            long dt = ((int) BenchmarkContext.get().warmUpTime) * 1000L * 1000 * 1000 // s -> ns
+            long st = BenchmarkMeasure.time()
+            while (!timeUp(st, dt)) {
+                BenchmarkMeasure.run(task, execTimes)
+            }
+        } else {
+            BenchmarkMeasure.run(task, 1)
+            Map bm, lbm
+            while (!stable(bm, lbm)) {
+                lbm = bm
+                bm = BenchmarkMeasure.run(task, execTimes)
+            }
+        }
     }
 
 }
