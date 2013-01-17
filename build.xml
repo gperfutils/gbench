@@ -1,6 +1,6 @@
 <project name="GBench" default="dist" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
   <property name="id" value="gbench" />
-  <property name="version" value="0.4.0" />
+  <property name="version" value="0.4.1" />
   <property name="vendor" value="Nagai Masato" />
 
   <!-- directories -->
