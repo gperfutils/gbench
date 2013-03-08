@@ -235,7 +235,7 @@
     </antcall>
     <antcall target="test">
       <param name="groovy.version.major" value="2.1" />
-      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+      <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
     </antcall>
   </target>
   
@@ -276,7 +276,7 @@
     </antcall>
     <antcall target="deploy">
       <param name="groovy.version.major" value="2.1" />
-      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+      <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
     </antcall>
   </target>
   
