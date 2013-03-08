@@ -113,7 +113,8 @@ class BenchmarkBuilder {
             Options
             =======
             * Warm Up: ${AUTO == options.warmUpTime ? 
-                'Auto' : options.warmUpTime + ' sec'} 
+                'Auto (- ' + options.maxWarmUpTime + ' sec)'
+                : options.warmUpTime + ' sec'} 
             * CPU Time Measurement: ${options.measureCpuTime ? 'On' : 'Off' }
         """.stripIndent())    
     }

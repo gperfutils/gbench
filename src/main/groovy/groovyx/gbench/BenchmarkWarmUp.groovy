@@ -54,7 +54,7 @@ class BenchmarkWarmUp {
                 lbm = bm
                 bm = BenchmarkMeasure.run(task, execTimes)
                 if (stable(bm, lbm)) {
-                  break
+                    break
                 }
             }
         }
