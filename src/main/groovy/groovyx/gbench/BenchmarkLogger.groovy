@@ -21,20 +21,20 @@ package groovyx.gbench
 class BenchmarkLogger {
 
     static void error(String s) {
-        System.err.println("[ERROR] " + s)
+        System.err.println("ERROR: " + s)
     }
 
     static void warn(String s) {
-        System.err.println("[WARN] " + s)
+        System.err.println("WARNING: " + s)
     }
 
     static void info(String s) {
-        if (!BenchmarkContext.get().quiet) System.err.println(s)
+        if (!BenchmarkContext.get().quiet) System.out.println(s)
     }
 
     static void trace(String s) {
         if (!BenchmarkContext.get().quiet && BenchmarkContext.get().verbose) {
-            System.err.println(s)
+            System.out.println(s)
         }
     }
 

@@ -20,7 +20,7 @@ class BenchmarkWarmUpTest {
         error = U.firstLine(U.callAndGetStderr({
             BenchmarkWarmUp.run("test", { Thread.sleep(100) }, 1)
         }))
-        assert "[WARN] Timed out waiting for \"test\" to be stable" == error
+        assert "WARNING: Timed out waiting for \"test\" to be stable" == error
 
         BenchmarkWarmUp.metaClass.'static'.stable = { Map current, Map last ->
               return true
@@ -30,7 +30,7 @@ class BenchmarkWarmUpTest {
         error = U.firstLine(U.callAndGetStderr({
             BenchmarkWarmUp.run("test", { Thread.sleep(1000) }, 1)
         }))
-        assert "[WARN] Timed out waiting for \"test\" to be stable" == error
+        assert "WARNING: Timed out waiting for \"test\" to be stable" == error
 
         // when the benchmark is stable before it takes maxWarmUpTime
         error = U.firstLine(U.callAndGetStderr({
