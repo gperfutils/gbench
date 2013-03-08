@@ -279,6 +279,26 @@
       <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
     </antcall>
   </target>
+
+  <target name="stage-all" 
+          description="Deploy release versions for all the supported versions of Groovy to Maven staging repository.">
+    <antcall target="stage">
+      <param name="groovy.version.major" value="1.7" />
+      <param name="groovy.version.minor" value="${groovy.1.7.version.minor}" />
+    </antcall>
+    <antcall target="stage">
+      <param name="groovy.version.major" value="1.8" />
+      <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+    </antcall>
+    <antcall target="stage">
+      <param name="groovy.version.major" value="2.0" />
+      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+    </antcall>
+    <antcall target="stage">
+      <param name="groovy.version.major" value="2.1" />
+      <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
+    </antcall>
+  </target>
   
    <target name="stage" depends="-init-maven-tasks,binary,source,javadoc" 
             description="Deploy release version to Maven staging repository">
