@@ -96,6 +96,7 @@ class BenchmarkBuilder {
         Map context = [
             measureCpuTime : cpuTimeSupported,
             warmUpTime : AUTO,
+            maxWarmUpTime: 60,
             quiet : false,
             verbose : false]
         context += options

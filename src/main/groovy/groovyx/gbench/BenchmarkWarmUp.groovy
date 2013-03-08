@@ -20,15 +20,15 @@ package groovyx.gbench
 /* $endif$ */
 class BenchmarkWarmUp {
 
-    private static boolean timeUp(long st, long dt) {
+    static boolean timeUp(long st, long dt) {
         BenchmarkMeasure.time() - st >= dt
     }
 
-    private static boolean stable(Map current, Map last) {
+    static boolean stable(Map current, Map last) {
         if (!(current && last)) {
             false
         } else {
-            !current.compilationTime && 
+            !current.compilationTime &&
                 BenchmarkMath.rmdev(
                     (long) current.executionTime, (long) last.executionTime) <= 0.005 /* 0.5% */
         }
@@ -42,11 +42,20 @@ class BenchmarkWarmUp {
                 BenchmarkMeasure.run(task, execTimes)
             }
         } else {
+            long dt = ((int) BenchmarkContext.get().maxWarmUpTime) * 1000L * 1000 * 1000 // s -> ns
+            long st = BenchmarkMeasure.time()
             BenchmarkMeasure.run(task, 1)
             Map bm, lbm
-            while (!stable(bm, lbm)) {
+            while (true) {
+                if (timeUp(st, dt)) {
+                    BenchmarkLogger.warn("Timed out waiting for benchmark to be stable")
+                    break
+                }
                 lbm = bm
                 bm = BenchmarkMeasure.run(task, execTimes)
+                if (stable(bm, lbm)) {
+                  break
+                }
             }
         }
     }
