@@ -34,7 +34,7 @@ class BenchmarkWarmUp {
         }
     }
 
-    static void run(Closure task, long execTimes) {
+    static void run(label, Closure task, long execTimes) {
         if (0 <= (int) BenchmarkContext.get().warmUpTime) {
             long dt = ((int) BenchmarkContext.get().warmUpTime) * 1000L * 1000 * 1000 // s -> ns
             long st = BenchmarkMeasure.time()
@@ -48,7 +48,7 @@ class BenchmarkWarmUp {
             Map bm, lbm
             while (true) {
                 if (timeUp(st, dt)) {
-                    BenchmarkLogger.warn("Timed out waiting for benchmark to be stable")
+                    BenchmarkLogger.warn("Timed out waiting for \"$label\" to be stable")
                     break
                 }
                 lbm = bm

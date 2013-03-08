@@ -44,7 +44,7 @@ class Benchmarker {
     static Map run(label, Closure task) {
         long execTimes = computeExecutionTimes(task)
 		BenchmarkLogger.trace("Warming up \"$label\"...")
-        BenchmarkWarmUp.run(task, execTimes)
+        BenchmarkWarmUp.run(label, task, execTimes)
 		BenchmarkLogger.trace("Measuring \"$label\"...")
         Map result = BenchmarkMeasure.run(task, execTimes)
         return [
