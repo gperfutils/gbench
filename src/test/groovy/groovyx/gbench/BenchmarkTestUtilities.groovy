@@ -13,6 +13,16 @@ class BenchmarkTestUtilities {
         output
     }
     
+    static def callAndGetStderr(expression) {
+        def stderr = System.err;
+        def baos = new ByteArrayOutputStream()
+        System.err = new PrintStream(baos)
+        expression()
+        def output = baos.toString()
+        System.err = stderr
+        output
+    }
+
     static def firstLine(s) {
         s.readLines()[0]    
     }
@@ -24,8 +34,10 @@ class BenchmarkTestUtilities {
     static def defaultAssert(actual) {
         // TODO system time is often negative number
         assert actual.matches(
-                'groovyx.gbench\\..+\\s\\sjava\\.lang\\.Object\\s[a-zA-Z0-9]+\\(.*\\)\\s\\s' +
-                'user:[0-9]+\\ssystem:[-0-9]+\\scpu:[0-9]+\\sreal:[0-9]+'
+                'groovyx.gbench\\..+\\s\\sjava\\.lang\\.Object\\s[a-zA-Z0-9]+\\(.*\\)\\s\\s' + (
+                    BenchmarkSystem.isMeasureCpuTime() && java.lang.management.ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ?
+                        'user:[0-9]+\\ssystem:[-0-9]+\\scpu:[0-9]+\\sreal:[0-9]+' : '[0-9]+'
+                 )
             )
     }
     
