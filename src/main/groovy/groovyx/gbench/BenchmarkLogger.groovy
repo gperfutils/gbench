@@ -19,18 +19,22 @@ package groovyx.gbench
 @groovy.transform.TypeChecked
 /* $endif$ */
 class BenchmarkLogger {
-    
+
     static void error(String s) {
-        System.err.println(s)
+        System.err.println("[ERROR] " + s)
     }
-    
+
+    static void warn(String s) {
+        System.err.println("[WARN] " + s)
+    }
+
     static void info(String s) {
-        if (!BenchmarkContext.get().quiet) System.out.println(s)
+        if (!BenchmarkContext.get().quiet) System.err.println(s)
     }
-    
+
     static void trace(String s) {
         if (!BenchmarkContext.get().quiet && BenchmarkContext.get().verbose) {
-            System.out.println(s)
+            System.err.println(s)
         }
     }
 
