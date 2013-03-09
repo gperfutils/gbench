@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package groovyx.gbench
+ */package groovyx.gbench
 
 import java.lang.management.CompilationMXBean
 import java.lang.management.GarbageCollectorMXBean
@@ -22,11 +22,11 @@ import java.lang.management.ManagementFactory
 @groovy.transform.TypeChecked
 /* $endif$ */
 class Benchmarker {
-    
+
     private static long measurementTimeInterval() {
         1L * 1000 * 1000 * 1000 // 1 sec
     }
-    
+
     private static long computeExecutionTimes(Closure task) {
         long times = 0
         long ti = measurementTimeInterval()
@@ -40,12 +40,12 @@ class Benchmarker {
         }
         times
     }
-    
+
     static Map run(label, Closure task) {
         long execTimes = computeExecutionTimes(task)
-		BenchmarkLogger.trace("Warming up \"$label\"...")
+        BenchmarkLogger.trace("Warming up \"$label\"...")
         BenchmarkWarmUp.run(label, task, execTimes)
-		BenchmarkLogger.trace("Measuring \"$label\"...")
+        BenchmarkLogger.trace("Measuring \"$label\"...")
         Map result = BenchmarkMeasure.run(task, execTimes)
         return [
             label: label,
@@ -56,6 +56,6 @@ class Benchmarker {
                       user: ((long) result.userTime) / execTimes,
                   )
         ]
-    } 
+    }
 
 }

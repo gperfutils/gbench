@@ -27,8 +27,8 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
 /**
  * An annotation for benchmarking.
- * <p> 
- * This annotation allows execution time measurement without modifying 
+ * <p>
+ * This annotation allows execution time measurement without modifying
  * existing code.
  * <pre><code>
  * class Klass {
@@ -39,7 +39,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  *     def bar() {
  *     }
  * }
- * 
+ *
  * {@code @Benchmark}
  * class Klass {
  *     def foo() {
@@ -48,32 +48,32 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  *     }
  * }
  * </code></pre>
- * 
+ *
  * The ouputs of both examples will be:
  * <pre><code>
  * Klass    java.lang.Object foo()    user:xxx system:xxx cpu:xxx real:xxx
  * Klass    java.lang.Object bar()    user:xxx system:xxx cpu:xxx real:xxx
  * </code></pre>
- * 
- * The handling of benchmark results can be customized by using handler classes 
- * that implement BenchmarkHandler interface. Handler classes must have two 
+ *
+ * The handling of benchmark results can be customized by using handler classes
+ * that implement BenchmarkHandler interface. Handler classes must have two
  * methods, handle() and getInstance():
  * <pre><code>
  * class MyHandler implements Benchmark.BenchmarkHandler {
  *     static def instance = new MyHandler()
  *         void handle(klass method, time) {
  *         println("${method} of ${klass}: ${(time.real/1000000) as long} ms")
- * 	   }
+ *        }
  *     static MyHandler getInstance() {
  *         instance
- *     } 
+ *     }
  * }
- * 
+ *
  * {@code @Benchmark}(MyHandler.class)
  * def foo() {
  * }
  * </code></pre>
- * 
+ *
  * Since Groovy 1.8, closures can be used instead of handler classes. With
  * closures, you just need to assign closures that handle benchmark results:
  * <pre><code>
@@ -81,18 +81,18 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * def foo() {
  * }
  * </code></pre>
- * 
- * also the default handling operation can be replaced with a system property, 
+ *
+ * also the default handling operation can be replaced with a system property,
  * "gbench.defaultHandler":
  * <pre><code>
  * groovy -cp gbench-xx.xx.xx.jar -Dgbench.defaultHandler="println(method + ' of ' + klass + ': ' + ((time.real/1000000) as long) + ' ms')" Foo.groovy
  * </code></pre>
- * 
+ *
  * Then the ouputs of both examples will be:
  * <pre><code>
  * java.lang.Object foo() of Foo: xxx ms
  * </code></pre>
- * 
+ *
  * <table border="1">
  * <caption>System Properties</caption>
  * <tr><th>Key</th><th>Value</th><th>Meaning</th>
@@ -100,7 +100,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * <tr><td>gbench.measureCpuTime</td><td>true, false</td><td>enables measuring CPU time. the default value is "true".</td></tr>
  * </table>
  * <p/>
- * 
+ *
  * @author Nagai Masato
  */
 @Retention(RetentionPolicy.SOURCE)
@@ -111,7 +111,7 @@ public @interface Benchmark {
         public void handle(Object klass, Object method, Object time);
     }
     static class DefaultBenchmarkHandler implements BenchmarkHandler {
-        static final DefaultBenchmarkHandler instance = 
+        static final DefaultBenchmarkHandler instance =
             new DefaultBenchmarkHandler();
         GroovyShell shell;
         String handler;
@@ -129,9 +129,9 @@ public @interface Benchmark {
                 shell.setVariable("time", time);
                 shell.evaluate(handler);
             } else {
-                System.out.println(klass + "  " + method + "  " + 
-                    (BenchmarkSystem.isMeasureCpuTime() && 
-                        ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ? 
+                System.out.println(klass + "  " + method + "  " +
+                    (BenchmarkSystem.isMeasureCpuTime() &&
+                        ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ?
                             time : ((BenchmarkTime) time).getReal()));
             }
         }

@@ -38,21 +38,21 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 
 /**
  * The AST transform to handle {@code @Benchmark} annotation
- * 
+ *
  * @author Nagai Masato
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 class BenchmarkASTTransformation implements ASTTransformation {
- 
+
     static final ClassNode MY_TYPE = ClassHelper.make(Benchmark.class)
-    static final ClassNode DEFAULT_HANDLER_TYPE = 
+    static final ClassNode DEFAULT_HANDLER_TYPE =
         ClassHelper.make(Benchmark.DefaultBenchmarkHandler.class)
-    static final ClassNode CLOSURE_HANDLER_TYPE = 
+    static final ClassNode CLOSURE_HANDLER_TYPE =
         ClassHelper.make(ClosureBenchmarkHandler.class)
-    
+
     void visit(ASTNode[] nodes, SourceUnit source) {
-        if (nodes.length != 2 || 
-                !(nodes[0] instanceof AnnotationNode) || 
+        if (nodes.length != 2 ||
+                !(nodes[0] instanceof AnnotationNode) ||
                 !(nodes[1] instanceof AnnotatedNode)) {
             throw new RuntimeException(
                 "Internal error: expecting [AnnotationNode, AnnotatedNode] " +
@@ -63,22 +63,22 @@ class BenchmarkASTTransformation implements ASTTransformation {
         if (MY_TYPE != annotation.classNode) {
             return
         }
-        if (BenchmarkSystem.isMeasureCpuTime() && 
+        if (BenchmarkSystem.isMeasureCpuTime() &&
             !ManagementFactory.threadMXBean.currentThreadCpuTimeSupported) {
             System.err.println("The JVM doesn't support CPU time measurement.")
         }
-        def parent = nodes[1] 
+        def parent = nodes[1]
         if (parent instanceof MethodNode) {
             transform((MethodNode) parent, annotation)
         } else if (parent instanceof ClassNode) {
             transform((ClassNode) parent, annotation)
         }
     }
-    
+
     boolean hasOwnBenchmark(AnnotatedNode node) {
         return !node.getAnnotations(MY_TYPE).isEmpty();
     }
-    
+
     void transform(ClassNode klass, AnnotationNode benchmark) {
         for (method in klass.methods) {
             if (hasOwnBenchmark(method)) {
@@ -87,13 +87,13 @@ class BenchmarkASTTransformation implements ASTTransformation {
             transform(method, benchmark);
         }
     }
-    
-   
+
+
     void transform(MethodNode method, AnnotationNode benchmark) {
         if (!(method.code instanceof BlockStatement)) {
             return
         }
-        def statements = 
+        def statements =
             new BenchmarkASTBuilder().build {[
                 /*
                  * ThreadMXBean __gbench_mxBean = ManagementFactory.getThreadMXBean()
@@ -118,7 +118,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                  *         __gbench_user = __gbench_mxBean.getCurrentThreadUserTime() - __gbench_bUser
                  *         __gbench_system = __gbench_cpu - __gbench_user
                  *     }
-                 *     BenchmarkTime __gbench_time = 
+                 *     BenchmarkTime __gbench_time =
                  *          new BenchmarkTime(__gbench_real, __gbench_cpu, __gbench_system, __gbench_user)
                  *     String __gbench_class = "className"
                  *     String __gbench_method = "methodDescription"
@@ -151,7 +151,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                                 constant('isCurrentThreadCpuTimeSupported'),
                                 argumentList()
                             )
-                        ) 
+                        )
                     )
                 ),
                 expression(
@@ -182,7 +182,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                 ifStatement(
                     booleanExpression(
                         variable('__gbench_measureCpuTime', ClassHelper.make(boolean)),
-                    ),    
+                    ),
                     block(
                         expression(
                             binary(
@@ -251,7 +251,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                         ifStatement(
                             booleanExpression(
                                 variable('__gbench_measureCpuTime', ClassHelper.make(boolean)),
-                            ),    
+                            ),
                             block(
                                 expression(
                                     binary(
@@ -267,7 +267,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                                             variable('__gbench_bCpu', ClassHelper.make(long))
                                         )
                                     )
-                                ),    
+                                ),
                                 expression(
                                     binary(
                                         variable('__gbench_user', ClassHelper.make(long)),
@@ -282,7 +282,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                                             variable('__gbench_bUser', ClassHelper.make(long))
                                         )
                                     )
-                                ),    
+                                ),
                                 expression(
                                     binary(
                                         variable('__gbench_system', ClassHelper.make(long)),
@@ -293,7 +293,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                                             variable('__gbench_user', ClassHelper.make(long))
                                         )
                                     )
-                                )    
+                                )
                             ),
                             empty()
                         ),
@@ -311,7 +311,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                                     ])
                                 )
                             )
-                        ),    
+                        ),
                         expression(
                             declaration(
                                 variable('__gbench_class', ClassHelper.make(String.class)),
@@ -327,7 +327,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                             )
                         ),
                         handleBenchmark(benchmark)
-                    ) 
+                    )
                 )
             ]}
         method.code.statements.clear()
@@ -338,7 +338,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
         def handleExpression = benchmark.getMember('value')
         def handleStatement
         if (!handleExpression || handleExpression instanceof ClassExpression) {
-            def handleClass = handleExpression ? 
+            def handleClass = handleExpression ?
                                 handleExpression.type : DEFAULT_HANDLER_TYPE
             handleStatement = new BenchmarkASTBuilder().build({
                 expression(
@@ -354,7 +354,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
                             variable('__gbench_method'),
                             variable('__gbench_time')
                         )
-                    )    
+                    )
                 )
             })
         } else if (handleExpression instanceof ClosureExpression) {
@@ -383,7 +383,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
             ]}) + handleExpression.code.statements
             handleExpression.code.statements.clear()
             handleExpression.code.statements += statements
-            
+
             handleStatement = new BenchmarkASTBuilder().build({
                 expression(
                     methodCall(
@@ -405,15 +405,15 @@ class BenchmarkASTTransformation implements ASTTransformation {
         }
         return handleStatement
     }
-    
+
     static class ClosureBenchmarkHandler implements Benchmark.BenchmarkHandler {
-        
+
         Closure clos;
-        
+
         ClosureBenchmarkHandler(Closure clos) {
             this.clos = clos;
         }
-        
+
         void handle(Object klass, Object method, Object time) {
             clos.delegate = new Delegate(
                 '__gbench_class', klass, '__gbench_method', method, '__gbench_time', time
@@ -421,7 +421,7 @@ class BenchmarkASTTransformation implements ASTTransformation {
             clos.resolveStrategy = Closure.DELEGATE_FIRST
             clos()
         }
-        
+
         static class Delegate extends GroovyObjectSupport {
             Map propMap;
             Delegate(Object[] props) {
@@ -439,6 +439,6 @@ class BenchmarkASTTransformation implements ASTTransformation {
             }
         }
     }
-    
-    
+
+
 }

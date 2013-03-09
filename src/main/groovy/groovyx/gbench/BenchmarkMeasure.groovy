@@ -23,7 +23,7 @@ import java.lang.management.ManagementFactory
 @groovy.transform.TypeChecked
 /* $endif$ */
 class BenchmarkMeasure {
-    
+
     static void cleanHeap() {
         Runtime rt = Runtime.runtime
         long bu = rt.totalMemory() - rt.freeMemory()
@@ -38,34 +38,34 @@ class BenchmarkMeasure {
             break
         }
     }
-    
+
     static long time() {
         System.nanoTime()
     }
-    
+
     static long cpuTime() {
         BenchmarkContext.get().measureCpuTime ?
             ManagementFactory.threadMXBean.currentThreadCpuTime : 0L
     }
-    
+
     static long userTime() {
         BenchmarkContext.get().measureCpuTime ?
             ManagementFactory.threadMXBean.currentThreadUserTime : 0L
     }
-    
+
     static long compilationTime() {
         CompilationMXBean bean = ManagementFactory.compilationMXBean
         bean.isCompilationTimeMonitoringSupported() ?
             bean.totalCompilationTime * 1000 * 1000 /* ms -> ns */ : 0L
     }
-    
+
     static long garbageCollectionTime() {
         ((long) ManagementFactory.garbageCollectorMXBeans
             .inject(0L) { long total, GarbageCollectorMXBean b ->
                 total + b.collectionTime
             }) * 1000 * 1000 // ms -> ns
     }
-    
+
     static Map run(Closure task, long execTimes) {
         cleanHeap()
         long bc = compilationTime()

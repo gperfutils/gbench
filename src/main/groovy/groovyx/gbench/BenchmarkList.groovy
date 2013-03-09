@@ -12,13 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package groovyx.gbench
+ */package groovyx.gbench
 
 class BenchmarkList extends ArrayList {
-    
+
     /**
      * Sorts by real time.
-     * 
+     *
      * @return this
      */
     def sort() {
@@ -27,15 +27,15 @@ class BenchmarkList extends ArrayList {
 
     /**
      * Pretty-prints.
-     * 
+     *
      * @param writer a print writer.
      */
     def prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
         if (!BenchmarkContext.get().measureCpuTime) {
             def w = inject([ label: 1, real: 1 ]) { w, bm ->
                 [ label: Math.max(w.label, bm.label.size()),
-                    real: Math.max(w.real, bm.time.real.toString().size()) ]    
-            } 
+                    real: Math.max(w.real, bm.time.real.toString().size()) ]
+            }
             each { bm ->
                 writer.printf(
                     "%-${w.label}s  %${w.real}s", bm.label, bm.time.real

@@ -12,34 +12,34 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package groovyx.gbench
+ */package groovyx.gbench
 
 /* $if version >= 2.0.0 $ */
 @groovy.transform.TypeChecked
 /* $endif$ */
 class BenchmarkMath {
-    
+
     /**
      * Calculates arithmetic mean.
      */
     static double mean(long a, long b) {
         (a + b) / 2
     }
-    
+
     /**
      * Calculates mean deviation.
      */
     static double mdev(long a, long b) {
         mdev(a, b, mean(a, b))
     }
-    
+
     /**
      * Calculates mean deviation.
      */
     static double mdev(long a, long b, double m) {
         (Math.abs(a - m) + Math.abs(b - m)) / 2
     }
-    
+
     /**
      * Calculates relative mean deviation.
      */
@@ -47,14 +47,14 @@ class BenchmarkMath {
         double m = mean(a, b)
         mdev(a, b, m) / m
     }
-    
+
     /**
      * Calculates standard deviation.
      */
     static double stdev(long a, long b) {
         stdev(a, b, mean(a, b))
     }
-    
+
     /**
      * Calculates standard deviation.
      */

@@ -22,7 +22,7 @@ import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 
 class BenchmarkASTBuilder {
-    
+
     private static Map AST_CLASSES = [
         "classNode": org.codehaus.groovy.ast.ClassNode,
         "variableScope": org.codehaus.groovy.ast.VariableScope,
@@ -48,9 +48,9 @@ class BenchmarkASTBuilder {
         "tuple": org.codehaus.groovy.ast.expr.TupleExpression,
         "variable": org.codehaus.groovy.ast.expr.VariableExpression,
     ]
-    
+
     private static Token TOKEN_UNKNOWN = new Token(Types.UNKNOWN, "", -1, -1)
-    
+
     private def methodMissing(String name, args) {
         Class c = AST_CLASSES[name]
         if (c) {
@@ -60,19 +60,19 @@ class BenchmarkASTBuilder {
         }
         throw new MissingMethodException(name, BenchmarkASTCompiler, args)
     }
-    
+
     private BlockStatement block(Statement...statements) {
         block(statements as List)
     }
-    
+
     private BlockStatement block(List<Statement> statements) {
         block(statements, variableScope())
     }
-    
+
     private Token token(String s) {
         Token t = keyword(s); t != TOKEN_UNKNOWN ? t : symbol(s)
     }
-    
+
     private Token keyword(String s) {
         int type = Types.lookupKeyword(s)
         type == Types.UNKNOWN ? TOKEN_UNKNOWN : token(type, s, -1, -1)
@@ -82,11 +82,11 @@ class BenchmarkASTBuilder {
         int type = Types.lookupSymbol(s)
         type == Types.UNKNOWN ? TOKEN_UNKNOWN : token(type, s, -1, -1)
     }
-    
+
     private ClassExpression classExpression(Class c) {
         classExpression(classNode(c))
     }
-    
+
     def build(Closure c) {
         c.resolveStrategy = Closure.DELEGATE_FIRST
         c.delegate = this
