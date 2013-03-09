@@ -8,7 +8,7 @@ import org.junit.Test
 
 
 class MethodBenchmarkTest {
-    
+
     @Benchmark
     def useDefaultHandler() {
         U.simulateOperation()
@@ -32,7 +32,7 @@ class MethodBenchmarkTest {
         useCustomHandler()
         U.customAssert(CustomBenchmarkHandler.instance.result)
     }
-    
+
 /* $if version >= 1.8.0 $ */
     @Benchmark({System.out.println("${klass} of ${method}\t${time}")})
     def useClosureHandler() {
@@ -50,5 +50,5 @@ class MethodBenchmarkTest {
         U.customAssert(U.firstLine(U.callAndGetStdout({useClosureHandlerWithDupArgs('foo', 'bar')})))
     }
 /* $endif$ */
-    
+
 }

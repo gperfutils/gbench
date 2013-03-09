@@ -7,24 +7,24 @@ import org.junit.Test;
 /* $endif$ */
 class CompileStaticTest {
 /* $if version >= 2.0.0 $ */
-    
+
     @groovy.transform.CompileStatic
     @Benchmark
     void compiledMethod() {
     }
-    
+
     @groovy.transform.TypeChecked
     @Benchmark
     void typeCheckedMethod() {
     }
-    
+
     @Test public void testStaticCompiledMethod() throws Exception {
         compiledMethod();
     }
-    
+
     @Test public void testTypeCheckedMethod() throws Exception {
         typeCheckedMethod();
     }
-    
+
 /* $endif$ */
 }

@@ -20,22 +20,22 @@ import java.lang.management.ManagementFactory
 /**
  * A builder for micro-benchmarking.
  * <p>
- * This builder allows accurate and easy benchmark. 
+ * This builder allows accurate and easy benchmark.
  * For example, you can benchmark character concatenation using
- * <code>StringBuilder</code> and <code>StringBuffer</code> and compare their 
+ * <code>StringBuilder</code> and <code>StringBuffer</code> and compare their
  * performances like the following:
  * </p>
  * <pre><code>
  * def bm = new BenchmarkBuilder().run {
  *     'StringBuilder' {
- *         def sb = new StringBuilder()        
+ *         def sb = new StringBuilder()
  *         sb.append('foo')
  *         sb.append('bar')
  *         sb.append('baz')
  *         sb.toString()
  *     }
  *     'StringBuffer' {
- *         def sb = new StringBuffer()        
+ *         def sb = new StringBuffer()
  *         sb.append('foo')
  *         sb.append('bar')
  *         sb.append('baz')
@@ -46,12 +46,12 @@ import java.lang.management.ManagementFactory
  * <code></pre>
  * then means (in nanoseconds) of each execution time will be printed out:
  * <pre>
- *                user  system  cpu  real 
+ *                user  system  cpu  real
  *
- * StringBuilder   283       0  284   286 
- * StringBuffer    319       0  319   321 
+ * StringBuilder   283       0  284   286
+ * StringBuffer    319       0  319   321
  * </pre>
- * 
+ *
  * <p/>
  *
  * @author Nagai Masato
@@ -65,10 +65,10 @@ class BenchmarkBuilder {
 
     /**
      * Gets benchmarks.
-     * 
+     *
      * @param options
      * <ul>
-     * <li>warmUpTime: the length of time (in seconds) to warm up Groovy and JVM. 
+     * <li>warmUpTime: the length of time (in seconds) to warm up Groovy and JVM.
      *              the default value is {@link AUTO}.</li>
      * <li>measureCpuTime: measure CPU time. the default value depends on JVM.</li>
      * <li>quiet: suppress output. the default value is <code>false</code>.
@@ -81,7 +81,7 @@ class BenchmarkBuilder {
         setOptions(options); printEnv(); printOption()
         return doRun(clos)
     }
-    
+
     private doRun(Closure clos) {
         benchmarks = new BenchmarkList()
         clos.resolveStrategy = Closure.DELEGATE_FIRST
@@ -89,9 +89,9 @@ class BenchmarkBuilder {
         clos()
         return benchmarks
     }
-    
+
     private void setOptions(options) {
-        def cpuTimeSupported = 
+        def cpuTimeSupported =
             ManagementFactory.threadMXBean.currentThreadCpuTimeSupported
         Map context = [
             measureCpuTime : cpuTimeSupported,
@@ -106,19 +106,19 @@ class BenchmarkBuilder {
         }
         BenchmarkContext.set(context)
     }
-    
+
     private def printOption() {
         def options = BenchmarkContext.get()
         BenchmarkLogger.info("""\
             Options
             =======
-            * Warm Up: ${AUTO == options.warmUpTime ? 
+            * Warm Up: ${AUTO == options.warmUpTime ?
                 'Auto (- ' + options.maxWarmUpTime + ' sec)'
-                : options.warmUpTime + ' sec'} 
+                : options.warmUpTime + ' sec'}
             * CPU Time Measurement: ${options.measureCpuTime ? 'On' : 'Off' }
-        """.stripIndent())    
+        """.stripIndent())
     }
-    
+
     private def printEnv() {
         def jvm = System.&getProperty
         def rt = Runtime.runtime
@@ -130,16 +130,16 @@ class BenchmarkBuilder {
                 * JRE: ${jvm('java.version')}
                 * Total Memory: ${rt.totalMemory() / 1024 / 1024 + ' MB'}
                 * Maximum Memory: ${rt.maxMemory() / 1024 / 1024 + ' MB'}
-            * OS: ${jvm('os.name')} (${jvm('os.version')}, ${jvm('os.arch')}) 
-        """.stripIndent()) 
+            * OS: ${jvm('os.name')} (${jvm('os.version')}, ${jvm('os.arch')})
+        """.stripIndent())
     }
 
     /**
      * Adds a code block as a benchmark target.
-     * 
-     * @deprecated Use the following alternate syntax instead: 
+     *
+     * @deprecated Use the following alternate syntax instead:
      *               <code>label { code }</code>
-     *               
+     *
      * @param label the label of the code block.
      * @param clos a code block.
      */

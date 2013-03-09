@@ -12,7 +12,7 @@ class BenchmarkTestUtilities {
         System.out = stdout
         output
     }
-    
+
     static def callAndGetStderr(expression) {
         def stderr = System.err;
         def baos = new ByteArrayOutputStream()
@@ -24,13 +24,13 @@ class BenchmarkTestUtilities {
     }
 
     static def firstLine(s) {
-        s.readLines()[0]    
+        s.readLines()[0]
     }
-    
+
     static def simulateOperation() {
         "foo"
     }
-    
+
     static def defaultAssert(actual) {
         // TODO system time is often negative number
         assert actual.matches(
@@ -40,13 +40,13 @@ class BenchmarkTestUtilities {
                  )
             )
     }
-    
+
     static def customAssert(actual) {
         // TODO system time is often negative number
         assert actual.matches(
                 'groovyx.gbench\\..+\\sof\\sjava\\.lang\\.Object\\s[a-zA-Z0-9]+\\(.*\\)\\t' +
                 'user:[0-9]+\\ssystem:[-0-9]+\\scpu:[0-9]+\\sreal:[0-9]+'
-            )    
+            )
     }
-    
+
 }

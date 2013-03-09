@@ -12,16 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package groovyx.gbench
+ */package groovyx.gbench
 
 /**
  * The class defines extension static methods.
- * 
+ *
  * @author Nagai Masato
  *
  */
 class BenchmarkStaticExtension {
-    
+
     /**
      * <pre>
      * benchmark {
@@ -32,5 +32,5 @@ class BenchmarkStaticExtension {
     static BenchmarkList benchmark(Object selfType, Map args = [:], Closure c) {
         new BenchmarkBuilder().run(args, c)
     }
-    
+
 }

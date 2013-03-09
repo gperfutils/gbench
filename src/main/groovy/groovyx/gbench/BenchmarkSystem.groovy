@@ -12,10 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package groovyx.gbench;
+ */package groovyx.gbench;
 
 class BenchmarkSystem {
-    
+
     public static boolean isMeasureCpuTime() {
         Boolean.valueOf(System.properties.'gbench.measureCpuTime'?: true)
     }

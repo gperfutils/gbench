@@ -7,12 +7,12 @@ import org.junit.Test
 
 @Benchmark
 class ClassBenchmarkTest {
-    
+
     def useClassBenchmark() {
         U.simulateOperation()
     }
     @Test void testUseClassBenchmark() {
         U.defaultAssert(U.firstLine(U.callAndGetStdout({useClassBenchmark()})))
     }
-    
+
 }

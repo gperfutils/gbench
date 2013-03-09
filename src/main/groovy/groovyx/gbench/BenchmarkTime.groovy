@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package groovyx.gbench
+ */package groovyx.gbench
 
 /* $if version >= 2.0.0 $ */
 @groovy.transform.TypeChecked
@@ -22,7 +22,7 @@ class BenchmarkTime {
     long cpu
     long system
     long user
-    
+
     // I don't know why but named argument constructor does not work with
     // static compilation.
     BenchmarkTime(long real, long cpu, long system, long user) {
@@ -31,12 +31,12 @@ class BenchmarkTime {
         this.system = system
         this.user = user
     }
-    
+
     BenchmarkTime(Map args) {
         this((long) args.real, (long) args.cpu, (long) args.system, (long) args.user)
     }
-    
+
     String toString() {
         "user:${user} system:${system} cpu:${cpu} real:${real}"
-    } 
+    }
 }

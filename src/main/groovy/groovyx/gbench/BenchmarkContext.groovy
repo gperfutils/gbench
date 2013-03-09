@@ -19,15 +19,15 @@ package groovyx.gbench
 @groovy.transform.TypeChecked
 /* $endif$ */
 class BenchmarkContext {
-    
+
     static final ThreadLocal context = new ThreadLocal()
-    
+
     static Map get() {
         (Map) context.get()
     }
-    
+
     static void set(Map another) {
         context.set(another)
     }
-    
+
 }
