@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package groovyx.gbench
+ */
+package groovyx.gbench
 
 import java.lang.management.CompilationMXBean
 import java.lang.management.GarbageCollectorMXBean
@@ -41,21 +42,12 @@ class Benchmarker {
         times
     }
 
-    static Map run(label, Closure task) {
+    static BenchmarkTime run(label, Closure task) {
         long execTimes = computeExecutionTimes(task)
         BenchmarkLogger.trace("Warming up \"$label\"...")
         BenchmarkWarmUp.run(label, task, execTimes)
         BenchmarkLogger.trace("Measuring \"$label\"...")
-        Map result = BenchmarkMeasure.run(task, execTimes)
-        return [
-            label: label,
-            time: new BenchmarkTime(
-                      real: ((long) result.executionTime) / execTimes,
-                      cpu: ((long) result.cpuTime) / execTimes,
-                      system: ((long) result.systemTime) / execTimes,
-                      user: ((long) result.userTime) / execTimes,
-                  )
-        ]
+        return BenchmarkMeasure.run(task, execTimes).benchmarkTime
     }
 
 }

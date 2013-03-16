@@ -18,11 +18,17 @@ package groovyx.gbench
 import java.lang.management.CompilationMXBean
 import java.lang.management.GarbageCollectorMXBean
 import java.lang.management.ManagementFactory
+import java.lang.management.ThreadMXBean
 
 /* $if version >= 2.0.0 $ */
 @groovy.transform.TypeChecked
 /* $endif$ */
 class BenchmarkMeasure {
+
+    static class Result {
+        BenchmarkTime benchmarkTime
+        long compilationTime
+    }
 
     static void cleanHeap() {
         Runtime rt = Runtime.runtime
@@ -43,14 +49,23 @@ class BenchmarkMeasure {
         System.nanoTime()
     }
 
-    static long cpuTime() {
-        BenchmarkContext.get().measureCpuTime ?
-            ManagementFactory.threadMXBean.currentThreadCpuTime : 0L
-    }
-
-    static long userTime() {
-        BenchmarkContext.get().measureCpuTime ?
-            ManagementFactory.threadMXBean.currentThreadUserTime : 0L
+    static long[] cpuTime() {
+        long[] r = new long[2]
+        if (!BenchmarkContext.get().measureCpuTime) {
+            r[0] = r[1] = 0L
+        } else {
+            long s, oh
+            s = time()
+            ThreadMXBean bean = ManagementFactory.threadMXBean
+            oh = time() - s
+            s = time()
+            long cpu = Math.max(0L, bean.currentThreadCpuTime - oh)
+            oh += (time() - s)
+            long user = Math.max(0L, bean.currentThreadUserTime - oh)
+            r[0] = cpu
+            r[1] = user
+        }
+        return r
     }
 
     static long compilationTime() {
@@ -66,24 +81,36 @@ class BenchmarkMeasure {
             }) * 1000 * 1000 // ms -> ns
     }
 
-    static Map run(Closure task, long execTimes) {
+    static Result run(Closure task, long execTimes) {
         cleanHeap()
+        long[] ct
         long bc = compilationTime()
-        long bct = cpuTime()
-        long but = userTime()
+        ct = cpuTime()
+        long bct = ct[0]
+        long but = ct[1]
         long bt = time()
         execTimes.times { task() }
-        long act = cpuTime()
-        long aut = userTime()
         long at = time()
+        ct = cpuTime()
+        long act = ct[0]
+        long aut = ct[1]
         long ac = compilationTime()
-        [
-            executionTime: at - bt,
-            cpuTime: act - bct,
-            userTime: aut - but,
-            systemTime: act - bct - (aut - but),
-            compilationTime: ac - bc,
-        ]
+
+        long real, cpu, user, system, compile
+        real = (long) ((at - bt) / execTimes)
+        cpu = (long) ((act - bct) / execTimes)
+        user = (long) ((aut - but) / execTimes)
+        system = cpu - user
+        compile = (long) ((ac - bc) / execTimes)
+        return new Result(
+            benchmarkTime: new BenchmarkTime(
+                real: real,
+                cpu: cpu,
+                user: user,
+                system: system
+            ),
+            compilationTime: compile
+        )
     }
 
 }
