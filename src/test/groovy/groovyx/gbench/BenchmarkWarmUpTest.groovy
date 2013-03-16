@@ -11,8 +11,9 @@ class BenchmarkWarmUpTest {
         BenchmarkContext.set(warmUpTime: -1, maxWarmUpTime: 1)
 
         def _stable = BenchmarkWarmUp.metaClass.'static'.stable
-        BenchmarkWarmUp.metaClass.'static'.stable = { Map current, Map last ->
-              return false
+        BenchmarkWarmUp.metaClass.'static'.stable = {
+            BenchmarkMeasure.Result current, BenchmarkMeasure.Result last ->
+            return false
         }
 
         def error
@@ -22,8 +23,9 @@ class BenchmarkWarmUpTest {
         }))
         assert "WARNING: Timed out waiting for \"test\" to be stable" == error
 
-        BenchmarkWarmUp.metaClass.'static'.stable = { Map current, Map last ->
-              return true
+        BenchmarkWarmUp.metaClass.'static'.stable = {
+            BenchmarkMeasure.Result current, BenchmarkMeasure.Result last ->
+            return true
         }
 
         // when the benchmark took maxWarmUpTime with the first run

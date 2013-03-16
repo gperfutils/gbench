@@ -144,7 +144,7 @@ class BenchmarkBuilder {
      * @param clos a code block.
      */
     def with(String label, Closure clos) {
-        benchmarks << Benchmarker.run(label, clos)
+        benchmarks << [ label: label, time: Benchmarker.run(label, clos) ]
     }
 
     String toString() {

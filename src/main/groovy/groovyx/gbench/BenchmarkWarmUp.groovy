@@ -24,13 +24,13 @@ class BenchmarkWarmUp {
         BenchmarkMeasure.time() - st >= dt
     }
 
-    static boolean stable(Map current, Map last) {
+    static boolean stable(BenchmarkMeasure.Result current, BenchmarkMeasure.Result last) {
         if (!(current && last)) {
             false
         } else {
             !current.compilationTime &&
                 BenchmarkMath.rmdev(
-                    (long) current.executionTime, (long) last.executionTime) <= 0.005 /* 0.5% */
+                    (long) current.benchmarkTime.real, (long) last.benchmarkTime.real) <= 0.005 /* 0.5% */
         }
     }
 
@@ -45,7 +45,7 @@ class BenchmarkWarmUp {
             long dt = ((int) BenchmarkContext.get().maxWarmUpTime) * 1000L * 1000 * 1000 // s -> ns
             long st = BenchmarkMeasure.time()
             BenchmarkMeasure.run(task, 1)
-            Map bm, lbm
+            BenchmarkMeasure.Result bm, lbm
             while (true) {
                 if (timeUp(st, dt)) {
                     BenchmarkLogger.warn("Timed out waiting for \"$label\" to be stable")

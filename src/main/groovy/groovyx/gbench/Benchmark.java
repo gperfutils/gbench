@@ -63,7 +63,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  *     static def instance = new MyHandler()
  *         void handle(klass method, time) {
  *         println("${method} of ${klass}: ${(time.real/1000000) as long} ms")
- *        }
+ * 	   }
  *     static MyHandler getInstance() {
  *         instance
  *     }
