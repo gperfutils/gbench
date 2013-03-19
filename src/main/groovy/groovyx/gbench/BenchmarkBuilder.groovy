@@ -69,7 +69,8 @@ class BenchmarkBuilder {
      * @param options
      * <ul>
      * <li>warmUpTime: the length of time (in seconds) to warm up Groovy and JVM.
-     *              the default value is {@link AUTO}.</li>
+     *              the default value is {@link #AUTO}.</li>
+     * <li>maxWarmUpTime: the maximum length of time (in seconds) that is used when warmUpTime is {@link #AUTO}.
      * <li>measureCpuTime: measure CPU time. the default value depends on JVM.</li>
      * <li>quiet: suppress output. the default value is <code>false</code>.
      * <li>verbose: enable verbose output. the default value is <code>false</code>.
