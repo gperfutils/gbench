@@ -23,7 +23,8 @@ class BenchmarkerTest {
         BenchmarkContext.set(warmUpTime: -1, maxWarmUpTime: 30, measureCpuTime: true, quite: true)
         def benchmarker = new Benchmarker()
         def r = benchmarker.run("Uncount Overhead Test", {})
-        def acceptableRange = 0L..10L
+        // Best effort. Zero is the best but it is impossible.
+        def acceptableRange = 0L..<50L
         assert acceptableRange.contains(r.cpu)
         assert acceptableRange.contains(r.real)
         println "Error Range: ${r}"
