@@ -118,7 +118,6 @@ class BenchmarkMeasure {
         Result overhead = doRun({}, execTimes)
         cleanHeap()
         Result result = doRun(task, execTimes)
-        println result.benchmarkTime
         return new Result(
             benchmarkTime: result.benchmarkTime - overhead.benchmarkTime,
             compilationTime:  result.compilationTime)
