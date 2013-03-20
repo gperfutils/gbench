@@ -39,4 +39,13 @@ class BenchmarkTime {
     String toString() {
         "user:${user} system:${system} cpu:${cpu} real:${real}"
     }
+
+    BenchmarkTime minus(BenchmarkTime another) {
+        return new BenchmarkTime(
+            real: Math.max(0L, real - another.real),
+            cpu: Math.max(0L, cpu - another.cpu),
+            system: Math.max(0L, system - another.system),
+            user: Math.max(0L, user - another.user)
+        )
+    }
 }
