@@ -18,6 +18,7 @@ package groovyx.gbench
 import java.lang.management.CompilationMXBean
 import java.lang.management.GarbageCollectorMXBean
 import java.lang.management.ManagementFactory
+import java.lang.management.ThreadInfo
 import java.lang.management.ThreadMXBean
 
 /* $if version >= 2.0.0 $ */
@@ -54,14 +55,14 @@ class BenchmarkMeasure {
         if (!BenchmarkContext.get().measureCpuTime) {
             r[0] = r[1] = 0L
         } else {
-            long s, oh
+            long s, overhead
             s = time()
             ThreadMXBean bean = ManagementFactory.threadMXBean
-            oh = time() - s
+            overhead = time() - s
             s = time()
-            long cpu = Math.max(0L, bean.currentThreadCpuTime - oh)
-            oh += (time() - s)
-            long user = Math.max(0L, bean.currentThreadUserTime - oh)
+            long cpu = Math.max(0L, bean.currentThreadCpuTime - overhead)
+            overhead += (time() - s)
+            long user = Math.max(0L, bean.currentThreadUserTime - overhead)
             r[0] = cpu
             r[1] = user
         }
@@ -81,8 +82,7 @@ class BenchmarkMeasure {
             }) * 1000 * 1000 // ms -> ns
     }
 
-    static Result run(Closure task, long execTimes) {
-        cleanHeap()
+    private static doRun(Closure task, long execTimes) {
         long[] ct
         long bc = compilationTime()
         ct = cpuTime()
@@ -111,6 +111,17 @@ class BenchmarkMeasure {
             ),
             compilationTime: compile
         )
+
+    }
+
+    static Result run(Closure task, long execTimes) {
+        Result overhead = doRun({}, execTimes)
+        cleanHeap()
+        Result result = doRun(task, execTimes)
+        println result.benchmarkTime
+        return new Result(
+            benchmarkTime: result.benchmarkTime - overhead.benchmarkTime,
+            compilationTime:  result.compilationTime)
     }
 
 }
