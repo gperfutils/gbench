@@ -31,8 +31,8 @@ class BenchmarkContext {
             [
                 cpuTimeSupported: cpuTimeSupported,
                 measureCpuTime: cpuTimeSupported && BenchmarkSystem.measureCpuTime,
-                warmUpTime: BenchmarkConstants.AUTO_WARM_UP,
-                maxWarmUpTime: 60,
+                warmUpTime: BenchmarkSystem.warmUpTime,
+                maxWarmUpTime: BenchmarkSystem.maxWarmUpTime,
                 verbose: BenchmarkSystem.verbose,
                 quiet: BenchmarkSystem.quiet,
             ]

@@ -18,7 +18,8 @@ class BenchmarkBuilderTest {
             def bb = new BenchmarkBuilder()
             bb.options = [:]
             BenchmarkContext.get().with {
-                assert BenchmarkBuilder.AUTO == warmUpTime
+                assert BenchmarkSystem.warmUpTime == warmUpTime
+                assert BenchmarkSystem.maxWarmUpTime == maxWarmUpTime
                 assert BenchmarkSystem.measureCpuTime == measureCpuTime
                 assert BenchmarkSystem.quiet == quiet
                 assert BenchmarkSystem.verbose == verbose
@@ -30,10 +31,11 @@ class BenchmarkBuilderTest {
 
     @Test void testOptions() {
         def bb = new BenchmarkBuilder()
-        bb.options = [ warmUpTime: 1, measureCpuTime: false,
+        bb.options = [ warmUpTime: 1, maxWarmUpTime: 2, measureCpuTime: false,
             quiet: true, verbose: true ]
         BenchmarkContext.get().with {
             assert 1 == warmUpTime
+            assert 2 == maxWarmUpTime
             assert !measureCpuTime
             assert quiet
             assert verbose
