@@ -24,26 +24,8 @@ import java.lang.management.ManagementFactory
 /* $endif$ */
 class Benchmarker {
 
-    private static long measurementTimeInterval() {
-        1L * 1000 * 1000 * 1000 // 1 sec
-    }
-
-    private static long computeExecutionTimes(Closure task) {
-        long times = 0
-        long ti = measurementTimeInterval()
-        long st = BenchmarkMeasure.time()
-        while (true) {
-            task()
-            times++
-            if (BenchmarkMeasure.time() - st >= ti) {
-                break
-            }
-        }
-        times
-    }
-
     static BenchmarkTime run(label, Closure task) {
-        long execTimes = computeExecutionTimes(task)
+        long execTimes = BenchmarkMeasure.computeExecutionTimes(task)
         BenchmarkLogger.trace("Warming up \"$label\"...")
         BenchmarkWarmUp.run(label, task, execTimes)
         BenchmarkLogger.trace("Measuring \"$label\"...")

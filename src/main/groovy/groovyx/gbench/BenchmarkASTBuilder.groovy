@@ -15,7 +15,10 @@
  */
 package groovyx.gbench
 
+import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.VariableScope
 import org.codehaus.groovy.ast.expr.ClassExpression
+import org.codehaus.groovy.ast.expr.ClosureExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.syntax.Token
@@ -33,12 +36,13 @@ class BenchmarkASTBuilder {
         "expression": org.codehaus.groovy.ast.stmt.ExpressionStatement,
         "ifStatement": org.codehaus.groovy.ast.stmt.IfStatement,
         "tryCatch": org.codehaus.groovy.ast.stmt.TryCatchStatement,
+        "returnStatement": org.codehaus.groovy.ast.stmt.ReturnStatement,
         // expression
         "argumentList": org.codehaus.groovy.ast.expr.ArgumentListExpression,
         "binary": org.codehaus.groovy.ast.expr.BinaryExpression,
         "booleanExpression": org.codehaus.groovy.ast.expr.BooleanExpression,
         "classExpression": org.codehaus.groovy.ast.expr.ClassExpression,
-        "closure": org.codehaus.groovy.ast.expr.ClosureExpression,
+        // "closure": org.codehaus.groovy.ast.expr.ClosureExpression,
         "constant": org.codehaus.groovy.ast.expr.ConstantExpression,
         "constructorCall": org.codehaus.groovy.ast.expr.ConstructorCallExpression,
         "declaration": org.codehaus.groovy.ast.expr.DeclarationExpression,
@@ -56,9 +60,19 @@ class BenchmarkASTBuilder {
         if (c) {
             try {
                 return c.newInstance(args)
-            } catch (e) {}
+            } catch (e) {
+                e.printStackTrace()
+            }
         }
-        throw new MissingMethodException(name, BenchmarkASTCompiler, args)
+        throw new MissingMethodException(name, BenchmarkASTBuilder, args)
+    }
+
+    private ClosureExpression closure(Parameter[] parameters, Statement statement) {
+        ClosureExpression e = new ClosureExpression(parameters, statement)
+        // The variableScope is required by groovyc.
+        // Why ClosureExpression doesn't have it in its constructor parameters?
+        e.variableScope = statement.variableScope.copy()
+        return e
     }
 
     private BlockStatement block(Statement...statements) {
@@ -85,6 +99,10 @@ class BenchmarkASTBuilder {
 
     private ClassExpression classExpression(Class c) {
         classExpression(classNode(c))
+    }
+
+    private Parameter[] parameters() {
+        Parameter.EMPTY_ARRAY
     }
 
     def build(Closure c) {

@@ -34,7 +34,7 @@ class BenchmarkWarmUp {
         }
     }
 
-    static void run(label, Closure task, long execTimes) {
+    static void run(label, Closure task, long execTimes = 1) {
         if (0 <= (int) BenchmarkContext.get().warmUpTime) {
             long dt = ((int) BenchmarkContext.get().warmUpTime) * 1000L * 1000 * 1000 // s -> ns
             long st = BenchmarkMeasure.time()

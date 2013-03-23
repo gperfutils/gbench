@@ -98,6 +98,8 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * <tr><th>Key</th><th>Value</th><th>Meaning</th>
  * <tr><td>gbench.defaultHandler</td><td>expression</td><td>the default benchmark handler.</td></tr>
  * <tr><td>gbench.measureCpuTime</td><td>true, false</td><td>enables measuring CPU time. the default value is "true".</td></tr>
+ * <tr><td>gbench.verbose</td><td>true, false</td><td>enables verbose output. the default value is "false".</td></tr>
+ * <tr><td>gbench.quiet</td><td>true, false</td><td>suppress output. the default value is "false".</td></tr>
  * </table>
  * <p/>
  *
