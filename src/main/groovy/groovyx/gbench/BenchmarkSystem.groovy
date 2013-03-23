@@ -28,4 +28,12 @@ class BenchmarkSystem {
         Boolean.valueOf(System.properties.'gbench.quiet'?: false)
     }
 
+    static int getWarmUpTime() {
+        Integer.valueOf(System.properties.'gbench.warmUpTime'?: BenchmarkConstants.AUTO_WARM_UP)
+    }
+
+    static int getMaxWarmUpTime() {
+        Integer.valueOf(System.properties.'gbench.maxWarmUpTime'?: 60)
+    }
+
 }
