@@ -18,7 +18,6 @@ package groovyx.gbench
 import java.lang.management.CompilationMXBean
 import java.lang.management.GarbageCollectorMXBean
 import java.lang.management.ManagementFactory
-import java.lang.management.ThreadInfo
 import java.lang.management.ThreadMXBean
 
 /* $if version >= 2.0.0 $ */
@@ -26,9 +25,27 @@ import java.lang.management.ThreadMXBean
 /* $endif$ */
 class BenchmarkMeasure {
 
-    static class Result {
-        BenchmarkTime benchmarkTime
-        long compilationTime
+    static long MEASUREMENT_TIME_INTERVAL = 1L * 1000 * 1000 * 1000 // 1 sec
+
+    static {
+        // I think this message is necessary and users can suppress it by quiet option.
+        BenchmarkLogger.info("Preparing. Please wait...")
+        BenchmarkWarmUp.run(
+            "Time Measurement", { _executionTime {} }, computeExecutionTimes { _executionTime {} })
+        BenchmarkLogger.info("Ready to benchmark.")
+    }
+
+    static long computeExecutionTimes(Closure task) {
+        long times = 0
+        long st = BenchmarkMeasure.time()
+        while (true) {
+            task()
+            times++
+            if (BenchmarkMeasure.time() - st >= MEASUREMENT_TIME_INTERVAL) {
+                break
+            }
+        }
+        times
     }
 
     static void cleanHeap() {
@@ -82,9 +99,8 @@ class BenchmarkMeasure {
             }) * 1000 * 1000 // ms -> ns
     }
 
-    private static doRun(Closure task, long execTimes) {
+    static BenchmarkTime _executionTime(Closure task, long execTimes = 1) {
         long[] ct
-        long bc = compilationTime()
         ct = cpuTime()
         long bct = ct[0]
         long but = ct[1]
@@ -94,33 +110,47 @@ class BenchmarkMeasure {
         ct = cpuTime()
         long act = ct[0]
         long aut = ct[1]
-        long ac = compilationTime()
 
         long real, cpu, user, system, compile
         real = (long) ((at - bt) / execTimes)
         cpu = (long) ((act - bct) / execTimes)
         user = (long) ((aut - but) / execTimes)
-        system = cpu - user
-        compile = (long) ((ac - bc) / execTimes)
-        return new Result(
-            benchmarkTime: new BenchmarkTime(
-                real: real,
-                cpu: cpu,
-                user: user,
-                system: system
-            ),
-            compilationTime: compile
+        return new BenchmarkTime(
+            real: real,
+            cpu: cpu,
+            user: user,
         )
 
     }
 
-    static Result run(Closure task, long execTimes) {
-        Result overhead = doRun({}, execTimes)
+    static BenchmarkTime executionTime(Closure task, long execTimes = 1) {
+        BenchmarkTime overhead = _executionTime({}, execTimes)
+        BenchmarkTime time = _executionTime(task, execTimes) - overhead
+        // Basically the cpu time would be equal or less than the real time and
+        // the user time would be less than the cpu time.
+        // But sometimes overhead calculation would fail and the times would be wrong.
+        long real = time.real
+        long cpu = time.cpu
+        long user = time.user
+        cpu = Math.min(real, cpu)
+        user = Math.min(cpu, user)
+        return new BenchmarkTime(real: real, cpu: cpu, user: user)
+    }
+
+    static class Result {
+        BenchmarkTime benchmarkTime
+        long compilationTime
+    }
+
+    static Result run(Closure task, long execTimes = 1) {
         cleanHeap()
-        Result result = doRun(task, execTimes)
+        long bc = compilationTime()
+        BenchmarkTime result = executionTime(task, execTimes)
+        long ac = compilationTime()
+        long compilationTime = (long) ((ac - bc) / execTimes)
         return new Result(
-            benchmarkTime: result.benchmarkTime - overhead.benchmarkTime,
-            compilationTime:  result.compilationTime)
+            benchmarkTime: result,
+            compilationTime:  compilationTime)
     }
 
 }

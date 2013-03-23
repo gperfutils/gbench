@@ -5,19 +5,27 @@ import java.lang.management.*
 
 import org.junit.Test
 
+import java.util.concurrent.CountDownLatch
+
 import static org.junit.Assert.*
 
 class BenchmarkBuilderTest {
 
     @Test void testDefaultOptions() {
-        def bb = new BenchmarkBuilder()
-        bb.options = [:]
-        BenchmarkContext.get().with {
-            assert BenchmarkBuilder.AUTO == warmUpTime
-            assert measureCpuTime
-            assert !quiet
-            assert !verbose
+        def latch = new CountDownLatch(1)
+        // start a new thread because the context might be dirty
+        new Thread().start {
+            def bb = new BenchmarkBuilder()
+            bb.options = [:]
+            BenchmarkContext.get().with {
+                assert BenchmarkBuilder.AUTO == warmUpTime
+                assert BenchmarkSystem.measureCpuTime == measureCpuTime
+                assert BenchmarkSystem.quiet == quiet
+                assert BenchmarkSystem.verbose == verbose
+            }
+            latch.countDown()
         }
+        latch.await()
     }
 
     @Test void testOptions() {
@@ -74,19 +82,19 @@ class BenchmarkBuilderTest {
        benchmarker.benchmarks = new BenchmarkList()
        benchmarker.benchmarks << [
                label: 'foo',
-               time: new BenchmarkTime(user:300000, system:200000, cpu:500000, real:1000000)
+               time: new BenchmarkTime(user:300, cpu:500, real:501)
            ]
        benchmarker.benchmarks << [
                label: 'bar',
-               time: new BenchmarkTime(user:450000, system:300000, cpu:700000, real:1500000)
+               time: new BenchmarkTime(user:450, cpu:700, real:701)
            ]
 
        def sw = new StringWriter()
        def pw = new PrintWriter(sw)
-       pw.println('       user  system     cpu     real')
+       pw.println('     user  system  cpu  real')
        pw.println()
-       pw.println('foo  300000  200000  500000  1000000')
-       pw.println('bar  450000  300000  700000  1500000')
+       pw.println('foo   300     200  500   501')
+       pw.println('bar   450     250  700   701')
        pw.flush()
 
        assertEquals(sw.toString(), benchmarker.toString())

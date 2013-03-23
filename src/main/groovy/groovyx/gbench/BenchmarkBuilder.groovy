@@ -59,7 +59,7 @@ import java.lang.management.ManagementFactory
  */
 class BenchmarkBuilder {
 
-    public static int AUTO = -1;
+    public static int AUTO = BenchmarkConstants.AUTO_WARM_UP;
 
     BenchmarkList benchmarks
 
@@ -92,16 +92,9 @@ class BenchmarkBuilder {
     }
 
     private void setOptions(options) {
-        def cpuTimeSupported =
-            ManagementFactory.threadMXBean.currentThreadCpuTimeSupported
-        Map context = [
-            measureCpuTime : cpuTimeSupported,
-            warmUpTime : AUTO,
-            maxWarmUpTime: 60,
-            quiet : false,
-            verbose : false]
+        Map context = BenchmarkContext.get();
         context += options
-        if (options.measureCpuTime && !cpuTimeSupported) {
+        if (options.measureCpuTime && !context.cpuTimeSupported) {
             BenchmarkLogger.error("The JVM doesn't support CPU time measurement.")
             context.measureCpuTime = false
         }

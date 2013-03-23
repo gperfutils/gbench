@@ -25,15 +25,15 @@ class BenchmarkTime {
 
     // I don't know why but named argument constructor does not work with
     // static compilation.
-    BenchmarkTime(long real, long cpu, long system, long user) {
+    BenchmarkTime(long real, long cpu, long user) {
         this.real = real
         this.cpu = cpu
-        this.system = system
         this.user = user
+        this.system = cpu - user
     }
 
     BenchmarkTime(Map args) {
-        this((long) args.real, (long) args.cpu, (long) args.system, (long) args.user)
+        this((long) args.real, (long) args.cpu, (long) args.user)
     }
 
     String toString() {
@@ -44,7 +44,6 @@ class BenchmarkTime {
         return new BenchmarkTime(
             real: Math.max(0L, real - another.real),
             cpu: Math.max(0L, cpu - another.cpu),
-            system: Math.max(0L, system - another.system),
             user: Math.max(0L, user - another.user)
         )
     }
