@@ -28,11 +28,9 @@ class BenchmarkMeasure {
     static long MEASUREMENT_TIME_INTERVAL = 1L * 1000 * 1000 * 1000 // 1 sec
 
     static {
-        // I think this message is necessary and users can suppress it by quiet option.
-        BenchmarkLogger.info("Preparing. Please wait...")
-        BenchmarkWarmUp.run(
-            "Time Measurement", { _executionTime {} }, computeExecutionTimes { _executionTime {} })
-        BenchmarkLogger.info("Ready to benchmark.")
+        // Cache the method when the class is loaded.
+        // Full warm-up is better but it might take too long time for preparing.
+        executionTime {}
     }
 
     static long computeExecutionTimes(Closure task) {
@@ -125,7 +123,8 @@ class BenchmarkMeasure {
 
     static BenchmarkTime executionTime(Closure task, long execTimes = 1) {
         BenchmarkTime overhead = _executionTime({}, execTimes)
-        BenchmarkTime time = _executionTime(task, execTimes) - overhead
+        BenchmarkTime time = _executionTime(task, execTimes)
+        time -= overhead
         // Basically the cpu time would be equal or less than the real time and
         // the user time would be less than the cpu time.
         // But sometimes overhead calculation would fail and the times would be wrong.
