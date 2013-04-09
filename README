@@ -1,0 +1,18 @@
+OVERVIEW:
+
+GBench is a benchmarking module for Groovy. It allows you to compare the
+performance of programs.
+
+GBench has two features: Benchmark Builder and Benchmark Transformation.
+Benchmark Builder allows you to correctly benchmark programs. Please read
+"Right Groovy Benchmarking" at
+
+  http://nagaimasato.blogspot.com/2012/03/right-groovy-benchmarking.html
+
+for understanding what the "correctly" means. Benchmark Transformation
+allows you to measure methods’ execution time without additional code.
+
+LICENSE:
+
+GBench is copyright 2011-2013 Masato Nagai and licensed under the term of
+the Apache License, Version 2.0. See the file LICENSE for the full license.
