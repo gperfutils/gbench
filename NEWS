@@ -1,0 +1,178 @@
+GBench 0.4.2 (2013-03-26)
+-------------------------
+
+New system properties: gbench.warmUpTime, gbench.maxWarmUpTime, gbench.verbose,
+  gbench.quiet
+
+Bug fixes:
+
+- #10: There is a case that CPU time is nagative
+- #11: maxWarmUpTime option for BenchmarkBuilder.run() is not written in its Javadoc
+- #13: ant javadoc fails
+- #16: The times of benchmarking a closure that does nothing aren't zero
+- #17: @Benchmark has same problems with #10 and #16
+
+GBench 0.4.1 (2013-03-08)
+-------------------------
+
+- Added maxWarmUpTime option for BenchmarkBuilder to limit the time of warm up in auto mode.
+  It is set 60 secs by default.
+
+Bug Fixes:
+
+- #8: BenchmarkWarumUp#run may loop very long or even forever
+
+GBench 0.4.0 (2012-11-03)
+-------------------------
+
+- New package name "groovyx.gbench"
+
+- Extension modules that run BenchmarkBuilder
+
+    benchmark {
+        'foo' {
+            // code
+        }
+        'bar' {
+            // code
+        }
+    }.prettyPrint()
+
+    {
+        'foo' {
+            // code
+        }
+        'bar' {
+            // code
+        }
+    }.benchmark().prettyPrint()
+
+- Improve performance both of @Benchmark and BenchmarkBuilder
+
+- Reduce the size of jar
+
+GBench 0.3.1 (2012-07-07)
+-------------------------
+
+Bug fixes:
+
+- NullPointerException occurs when using @Benchmark with @CompileStatic
+
+GBench 0.3.0 (2012-03-17)
+-------------------------
+
+- New BenchmarkBuilder that allows automated and accurate micro-benchmark.
+  Groovy is a difficult language to accurately benchmark. Method caching,
+  Reflection inflation (Groovy implicitly uses Reflection API), other
+  dynamic optimization, and garbage collection... there are many factors that
+  interfere measurement. You can resolve the issues by using BenchmarkBuilder.
+  See also "Right Groovy Benchmarking" at
+
+  http://nagaimasato.blogspot.com/2012/03/right-groovy-benchmarking.html
+
+    import gbench.*
+
+    new BenchmarkBuilder().run {
+        'StringBuilder' {
+            def sb = new StringBuilder()        
+            sb.append('foo')
+            sb.append('bar')
+            sb.append('baz')
+            sb.toString()
+        }
+        'StringBuffer' {
+            def sb = new StringBuffer()        
+            sb.append('foo')
+            sb.append('bar')
+            sb.append('baz')
+            sb.toString()
+        }
+    }.prettyPrint()
+
+    /* Output:
+    Environment
+    ===========
+    * Groovy: 1.8.6
+    * JVM: Java HotSpot(TM) 64-Bit Server VM (23.0-b15, Oracle Corporation)
+        * JRE: 1.7.0_04-ea
+        * Total Memory: 99.4375 MB
+        * Maximum Memory: 1169.8125 MB
+    * OS: Mac OS X (10.7.3, amd64) 
+
+    Options
+    =======
+    * Warm Up: Auto 
+    * CPU Time Measurement: On
+
+                   user  system  cpu  real
+
+    StringBuilder   236       0  236   237
+    StringBuffer    263       0  263   267
+    */
+
+- Change system properties for @Benchmark.
+  Now two properties are available: gbench.defaultHandler, gbench.measureCpuTime
+
+GBench 0.2.2 (2011-09-09)
+-------------------------
+
+Bug fixes:
+
+- #3: v0.2.1 fails when using with groovy 1.7
+
+GBench 0.2.1 (2011-09-09)
+-------------------------
+
+- Added a system property for enabling / disabling CPU time measurement.
+  See javadoc of @Benchmark and BenchmarkBuilder for details.
+
+- Added a system property for tracing in BenchmarkBuilder.
+  See javadoc of BenchmarkBuilder for details.
+
+Bug fixes:
+
+- The "idle" option for warm-up does not work well.
+- Benchmark AST Transformation fails on a JVM which does not support CPU time measurement.
+
+GBench 0.2.0 (2011-07-20)
+-------------------------
+
+- Added support for CPU time.
+
+- Improved the builder API.
+  Added better (Groovier) syntax to add benchmark target code blocks.
+
+     // old syntax
+     run {
+         with 'label', {
+         }
+     }
+
+     // new syntax
+     run {
+         label {
+         }
+     }
+
+- Added new options for run().
+  "average", "idle", "trim". See its javadoc for usage. Thanks to Yasuharu Nakano
+  (author of GroovyServ) for providing the source code.
+  "repeat". This option is an alternative to "time" option, but "time" option still available
+  for backward compatibility.
+
+- Added new APIs.
+  sum(), average(), prettyPrint(). See their javadoc for usage.
+
+- Changed versioning scheme.
+  YY.MM.DD -> Major.Minor.Micro
+
+- Change the name of "groovybenchmark.sf.net.defaulthandle" system property to
+  "gbench.defaulthandle"
+
+Bug fixes:
+
+- The name of the system property to specify @Benchmark's default handling contains
+  the old domain.
+
+GBench 0.1.0 (2011-06-25)
+-------------------------

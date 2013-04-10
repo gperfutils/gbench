@@ -4,13 +4,19 @@ GBench is a benchmarking module for Groovy. It allows you to compare the
 performance of programs.
 
 GBench has two features: Benchmark Builder and Benchmark Transformation.
-Benchmark Builder allows you to correctly benchmark programs. Please read
-"Right Groovy Benchmarking" at
+
+Benchmark Builder allows you to correctly benchmark programs. Groovy is a
+difficult language to accurately benchmark. Method caching, dynamic
+optimization and garbage collection by JVM, there are many factors that
+interfere measurement. You can resolve the issues by using BenchmarkBuilder.
+See also "Right Groovy Benchmarking" at
 
   http://nagaimasato.blogspot.com/2012/03/right-groovy-benchmarking.html
 
-for understanding what the "correctly" means. Benchmark Transformation
-allows you to measure methods’ execution time without additional code.
+for understanding what the "correctly" means.
+
+Benchmark Transformation allows you to measure methods’ execution time
+without additional code.
 
 LICENSE:
 
