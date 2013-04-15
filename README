@@ -1,4 +1,5 @@
-OVERVIEW:
+OVERVIEW
+--------
 
 GBench is a benchmarking module for Groovy. It allows you to compare the
 performance of programs.
@@ -18,7 +19,16 @@ for understanding what the "correctly" means.
 Benchmark Transformation allows you to measure methods’ execution time
 without additional code.
 
-LICENSE:
+INSTALL
+-------
+
+  @Grab('org.gperfutils:gbench:0.4.2-groovy-2.1') // v0.4.2 for Groovy 2.1
+
+or other ways to install from the Maven Central repository or build a jar
+file from source code.
+
+LICENSE
+-------
 
 GBench is copyright 2011-2013 Masato Nagai and licensed under the term of
 the Apache License, Version 2.0. See the file LICENSE for the full license.
