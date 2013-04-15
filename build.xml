@@ -1,7 +1,7 @@
 <project name="GBench" default="dist" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
   <property name="id" value="gbench" />
   <property name="version" value="0.5.0" />
-  <property name="vendor" value="Nagai Masato" />
+  <property name="vendor" value="Masato Nagai" />
 
   <!-- directories -->
   <property name="src.dir" value="src" />

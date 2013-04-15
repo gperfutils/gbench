@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Nagai Masato
+ * Copyright 2011 Masato Nagai
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 /**
  * The AST transform to handle {@code @Benchmark} annotation
  *
- * @author Nagai Masato
+ * @author Masato Nagai
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 class BenchmarkASTTransformation implements ASTTransformation {

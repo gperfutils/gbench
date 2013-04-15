@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Nagai Masato
+ * Copyright 2012 Masato Nagai
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 /**
  * The class defines extension static methods.
  *
- * @author Nagai Masato
+ * @author Masato Nagai
  *
  */
 class BenchmarkStaticExtension {
