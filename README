@@ -12,7 +12,7 @@ optimization and garbage collection by JVM, there are many factors that
 interfere measurement. You can resolve the issues by using BenchmarkBuilder.
 See also "Right Groovy Benchmarking" at
 
-  http://nagaimasato.blogspot.com/2012/03/right-groovy-benchmarking.html
+  http://blog.masatonagai.com/2012/03/right-groovy-benchmarking.html
 
 for understanding what the "correctly" means.
 
@@ -30,5 +30,5 @@ file from source code.
 LICENSE
 -------
 
-GBench is copyright 2011-2013 Masato Nagai and licensed under the term of
-the Apache License, Version 2.0. See the file LICENSE for the full license.
+GBench is licensed under the term of the Apache License, Version 2.0. See
+the file LICENSE for the full license.
