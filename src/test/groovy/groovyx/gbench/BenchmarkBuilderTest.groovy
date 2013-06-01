@@ -1,8 +1,5 @@
 package groovyx.gbench
 
-
-import java.lang.management.*
-
 import org.junit.Test
 
 import java.util.concurrent.CountDownLatch
@@ -33,6 +30,22 @@ class BenchmarkBuilderTest {
         def bb = new BenchmarkBuilder()
         bb.options = [ warmUpTime: 1, maxWarmUpTime: 2, measureCpuTime: false,
             quiet: true, verbose: true ]
+        BenchmarkContext.get().with {
+            assert 1 == warmUpTime
+            assert 2 == maxWarmUpTime
+            assert !measureCpuTime
+            assert quiet
+            assert verbose
+        }
+
+        bb = new BenchmarkBuilder()
+        bb.run {
+            warmUpTime = 1
+            maxWarmUpTime = 2
+            measureCpuTime = false
+            quiet = true
+            verbose = true
+        }
         BenchmarkContext.get().with {
             assert 1 == warmUpTime
             assert 2 == maxWarmUpTime
@@ -81,12 +94,12 @@ class BenchmarkBuilderTest {
     @Test void testPrettyPrint() {
        def benchmarker = new BenchmarkBuilder()
        benchmarker.options = [measureCpuTime: true]
-       benchmarker.benchmarks = new BenchmarkList()
-       benchmarker.benchmarks << [
+       benchmarker.results = new BenchmarkResultList()
+       benchmarker.results << [
                label: 'foo',
                time: new BenchmarkTime(user:300, cpu:500, real:501)
            ]
-       benchmarker.benchmarks << [
+       benchmarker.results << [
                label: 'bar',
                time: new BenchmarkTime(user:450, cpu:700, real:701)
            ]

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Masato Nagai
+ * Copyright 2013 Masato Nagai
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,25 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package groovyx.gbench
-
-/**
- * The class defines extension methods.
- *
- * @author Masato Nagai
- *
  */
-class BenchmarkExtension {
+package groovyx.gbench
 
-    /**
-     * <pre>
-     * { ->
-     *     // ...
-     * }.benchmark()
-     * </pre>
-     */
-    static BenchmarkResultList benchmark(Closure self, Map args = [:]) {
-        new BenchmarkBuilder().run(args, self)
-    }
+class BenchmarkResult {
+
+    String label
+    BenchmarkTime time
 
 }

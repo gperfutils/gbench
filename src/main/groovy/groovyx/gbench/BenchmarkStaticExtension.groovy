@@ -29,7 +29,7 @@ class BenchmarkStaticExtension {
      * }
      * </pre>
      */
-    static BenchmarkList benchmark(Object selfType, Map args = [:], Closure c) {
+    static BenchmarkResultList benchmark(Object selfType, Map args = [:], Closure c) {
         new BenchmarkBuilder().run(args, c)
     }
 

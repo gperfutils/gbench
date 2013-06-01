@@ -15,6 +15,8 @@
  */
 package groovyx.gbench
 
+import java.util.concurrent.Callable
+
 /* $if version >= 2.0.0 $ */
 @groovy.transform.TypeChecked
 /* $endif$ */
@@ -34,7 +36,7 @@ class BenchmarkWarmUp {
         }
     }
 
-    static void run(label, Closure task, long execTimes = 1) {
+    static void run(label, Callable task, long execTimes = 1) {
         if (0 <= (int) BenchmarkContext.get().warmUpTime) {
             long dt = ((int) BenchmarkContext.get().warmUpTime) * 1000L * 1000 * 1000 // s -> ns
             long st = BenchmarkMeasure.time()

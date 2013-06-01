@@ -14,23 +14,23 @@
  * limitations under the License.
  */package groovyx.gbench
 
-class BenchmarkList extends ArrayList {
+class BenchmarkResultList extends ArrayList<BenchmarkResult> {
 
     /**
-     * Sorts by real time.
+     * Sorts the results by real time.
      *
      * @return this
      */
-    def sort() {
+    BenchmarkResultList sort() {
         return sort {it.time.real}
     }
 
     /**
-     * Pretty-prints.
+     * Pretty-prints the results.
      *
      * @param writer a print writer.
      */
-    def prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
+    void prettyPrint(PrintWriter writer = new PrintWriter(System.out)) {
         if (!BenchmarkContext.get().measureCpuTime) {
             def w = inject([ label: 1, real: 1 ]) { w, bm ->
                 [ label: Math.max(w.label, bm.label.size()),

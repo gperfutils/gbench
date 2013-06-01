@@ -18,13 +18,14 @@ package groovyx.gbench
 import java.lang.management.CompilationMXBean
 import java.lang.management.GarbageCollectorMXBean
 import java.lang.management.ManagementFactory
+import java.util.concurrent.Callable
 
 /* $if version >= 2.0.0 $ */
 @groovy.transform.TypeChecked
 /* $endif$ */
 class Benchmarker {
 
-    static BenchmarkTime run(label, Closure task) {
+    static BenchmarkTime run(label, Callable task) {
         long execTimes = BenchmarkMeasure.computeExecutionTimes(task)
         BenchmarkLogger.trace("Warming up \"$label\"...")
         BenchmarkWarmUp.run(label, task, execTimes)

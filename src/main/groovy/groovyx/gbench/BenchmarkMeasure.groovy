@@ -19,6 +19,7 @@ import java.lang.management.CompilationMXBean
 import java.lang.management.GarbageCollectorMXBean
 import java.lang.management.ManagementFactory
 import java.lang.management.ThreadMXBean
+import java.util.concurrent.Callable
 
 /* $if version >= 2.0.0 $ */
 @groovy.transform.TypeChecked
@@ -33,7 +34,7 @@ class BenchmarkMeasure {
         executionTime {}
     }
 
-    static long computeExecutionTimes(Closure task) {
+    static long computeExecutionTimes(Callable task) {
         long times = 0
         long st = BenchmarkMeasure.time()
         while (true) {
@@ -97,7 +98,7 @@ class BenchmarkMeasure {
             }) * 1000 * 1000 // ms -> ns
     }
 
-    static BenchmarkTime _executionTime(Closure task, long execTimes = 1) {
+    static BenchmarkTime _executionTime(Callable task, long execTimes = 1) {
         long[] ct
         ct = cpuTime()
         long bct = ct[0]
@@ -121,7 +122,7 @@ class BenchmarkMeasure {
 
     }
 
-    static BenchmarkTime executionTime(Closure task, long execTimes = 1) {
+    static BenchmarkTime executionTime(Callable task, long execTimes = 1) {
         BenchmarkTime overhead = _executionTime({}, execTimes)
         BenchmarkTime time = _executionTime(task, execTimes)
         time -= overhead
@@ -141,7 +142,7 @@ class BenchmarkMeasure {
         long compilationTime
     }
 
-    static Result run(Closure task, long execTimes = 1) {
+    static Result run(Callable task, long execTimes = 1) {
         cleanHeap()
         long bc = compilationTime()
         BenchmarkTime result = executionTime(task, execTimes)

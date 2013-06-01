@@ -15,7 +15,7 @@
  */
 package groovyx.gbench
 
-import java.lang.management.ManagementFactory
+import java.util.concurrent.Callable
 
 /**
  * A builder for micro-benchmarking.
@@ -59,12 +59,71 @@ import java.lang.management.ManagementFactory
  */
 class BenchmarkBuilder {
 
-    public static int AUTO = BenchmarkConstants.AUTO_WARM_UP;
+    static int AUTO = BenchmarkConstants.AUTO_WARM_UP;
 
-    BenchmarkList benchmarks
+    BenchmarkResultList results = new BenchmarkResultList()
+
+    private Map blocks = [:]
 
     /**
-     * Gets benchmarks.
+     * Creates an instance of the class.
+     *
+     * @return the new instance
+     */
+    static BenchmarkBuilder create() {
+        return new BenchmarkBuilder()
+    }
+
+    BenchmarkBuilder setWarmUpTime(int warmUpTime) {
+        return setOption('warmUpTime', warmUpTime)
+    }
+
+    BenchmarkBuilder setMaxWarmUpTime(int maxWarmUpTime) {
+        return setOption('maxWarmUpTime', maxWarmUpTime)
+    }
+
+    BenchmarkBuilder setMeasureCpuTime(boolean measureCpuTime) {
+        return setOption('measureCpuTime', measureCpuTime)
+    }
+
+    BenchmarkBuilder setQuiet(boolean quiet) {
+        return setOption('quiet', quiet)
+    }
+
+    BenchmarkBuilder setVerbose(boolean verbose) {
+        return setOption('verbose', verbose)
+    }
+
+    private BenchmarkBuilder setOption(name, value) {
+        Map context = BenchmarkContext.get()
+        if (name == "measureCpuTime" && value && !context.cpuTimeSupported) {
+            BenchmarkLogger.error("The JVM doesn't support CPU time measurement.")
+        } else {
+            context.put(name, value)
+        }
+        return this
+    }
+
+    private void setOptions(options = [:]) {
+        options.each { name, value ->
+            setOption(name, value)
+        }
+    }
+
+    /**
+     * Adds a code block to the list to be measured.
+     *
+     * @param label a label for the code block
+     * @param code a code block to be measured
+     * @return the instance of the builder
+     */
+    BenchmarkBuilder add(String label, Callable code) {
+        blocks[label] = code
+        return this
+    }
+
+    /**
+     * Benchmarks using DSL and returns the results.
      *
      * @param options
      * <ul>
@@ -75,30 +134,45 @@ class BenchmarkBuilder {
      * <li>quiet: suppress output. the default value is <code>false</code>.
      * <li>verbose: enable verbose output. the default value is <code>false</code>.
      * </ul>
-     * @param clos a closure to add code blocks for benchmarking.
-     * @return a list of benchmarks
+     * @param dsl DSL to setup
+     * @return the results of the benchmarking
      */
-    def run(Map options = [:], Closure clos) {
-        setOptions(options); printEnv(); printOption()
-        return doRun(clos)
+    BenchmarkResultList run(Map options = [:], Closure dsl) {
+        dsl.resolveStrategy = Closure.DELEGATE_FIRST
+        dsl.delegate = this
+        dsl()
+        return run(options)
     }
 
-    private doRun(Closure clos) {
-        benchmarks = new BenchmarkList()
-        clos.resolveStrategy = Closure.DELEGATE_FIRST
-        clos.delegate = this
-        clos()
-        return benchmarks
+    /**
+     * Benchmarks and returns the results.
+     *
+     * @param options
+     * <ul>
+     * <li>warmUpTime: the length of time (in seconds) to warm up Groovy and JVM.
+     *              the default value is {@link #AUTO}.</li>
+     * <li>maxWarmUpTime: the maximum length of time (in seconds) that is used when warmUpTime is {@link #AUTO}.
+     * <li>measureCpuTime: measure CPU time. the default value depends on JVM.</li>
+     * <li>quiet: suppress output. the default value is <code>false</code>.
+     * <li>verbose: enable verbose output. the default value is <code>false</code>.
+     * </ul>
+     * @return the results of the benchmarking
+     */
+    BenchmarkResultList run(Map options = [:]) {
+        setOptions(options);
+        return doRun()
     }
 
-    private void setOptions(options) {
-        Map context = BenchmarkContext.get();
-        context += options
-        if (options.measureCpuTime && !context.cpuTimeSupported) {
-            BenchmarkLogger.error("The JVM doesn't support CPU time measurement.")
-            context.measureCpuTime = false
-        }
-        BenchmarkContext.set(context)
+    private doRun() {
+        printEnv();
+        printOption()
+        results.clear()
+        blocks.each { label, code -> results << benchmark(label, code) }
+        return results
+    }
+
+    private BenchmarkResult benchmark(String label, Callable block) {
+        new BenchmarkResult(label: label, time: Benchmarker.run(label, block))
     }
 
     private def printOption() {
@@ -106,9 +180,9 @@ class BenchmarkBuilder {
         BenchmarkLogger.info("""\
             Options
             =======
-            * Warm Up: ${AUTO == options.warmUpTime ?
-                'Auto (- ' + options.maxWarmUpTime + ' sec)'
-                : options.warmUpTime + ' sec'}
+            * Warm Up: ${
+            AUTO == options.warmUpTime ? 'Auto (- ' + options.maxWarmUpTime + ' sec)' : options.warmUpTime + ' sec'
+        }
             * CPU Time Measurement: ${options.measureCpuTime ? 'On' : 'Off' }
         """.stripIndent())
     }
@@ -128,28 +202,15 @@ class BenchmarkBuilder {
         """.stripIndent())
     }
 
-    /**
-     * Adds a code block as a benchmark target.
-     *
-     * @deprecated Use the following alternate syntax instead:
-     *               <code>label { code }</code>
-     *
-     * @param label the label of the code block.
-     * @param clos a code block.
-     */
-    def with(String label, Closure clos) {
-        benchmarks << [ label: label, time: Benchmarker.run(label, clos) ]
-    }
-
     String toString() {
         def writer = new StringWriter()
-        benchmarks.prettyPrint(new PrintWriter(writer))
+        results.prettyPrint(new PrintWriter(writer))
         return writer.toString()
     }
 
-    def invokeMethod(String name, Object args) {
+    Object invokeMethod(String name, Object args) {
         if (args && args.size() == 1) {
-            with(name, args[0])
+            add(name, args[0])
         }
     }
 }
