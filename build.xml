@@ -17,11 +17,13 @@
   <!-- groovy 2.0 -->
   <property name="groovy.2.0.version.minor" value="8" />
   <!-- groovy 2.1 -->
-  <property name="groovy.2.1.version.minor" value="4" />
+  <property name="groovy.2.1.version.minor" value="9" />
+  <!-- groovy 2.2 -->
+  <property name="groovy.2.2.version.minor" value="1" />
 
   <!-- default groovy -->
-  <property name="groovy.version.major" value="2.1" />
-  <property name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
+  <property name="groovy.version.major" value="2.2" />
+  <property name="groovy.version.minor" value="${groovy.2.2.version.minor}" />
 
   <!-- maven ant tasks -->
   <property name="maven.repo.url" value="http://repo1.maven.org/maven2" />
@@ -129,6 +131,10 @@
       <param name="groovy.version.major" value="2.1" />
       <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
     </antcall>
+    <antcall target="binary">
+      <param name="groovy.version.major" value="2.2" />
+      <param name="groovy.version.minor" value="${groovy.2.2.version.minor}" />
+    </antcall>
   </target>
 
   <target name="binary" depends="test" description="Create the binary archive.">
@@ -191,7 +197,7 @@
 
     <groovy>
       def spockVer = properties.'groovy.version.major'
-      if (spockVer == '2.1') {
+      if (spockVer >= '2.1') {
         // spock doesn't support groovy 2.1 officially yet.
         spockVer = '2.0'
       }
@@ -248,6 +254,10 @@
       <param name="groovy.version.major" value="2.1" />
       <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
     </antcall>
+    <antcall target="test">
+      <param name="groovy.version.major" value="2.2" />
+      <param name="groovy.version.minor" value="${groovy.2.2.version.minor}" />
+    </antcall>
   </target>
   
   <target name="deploy" depends="-init-maven-tasks,binary" 
@@ -285,6 +295,10 @@
       <param name="groovy.version.major" value="2.1" />
       <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
     </antcall>
+    <antcall target="deploy">
+      <param name="groovy.version.major" value="2.2" />
+      <param name="groovy.version.minor" value="${groovy.2.2.version.minor}" />
+    </antcall>
   </target>
 
   <target name="stage-all" 
@@ -300,6 +314,10 @@
     <antcall target="stage">
       <param name="groovy.version.major" value="2.1" />
       <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
+    </antcall>
+    <antcall target="stage">
+      <param name="groovy.version.major" value="2.2" />
+      <param name="groovy.version.minor" value="${groovy.2.2.version.minor}" />
     </antcall>
   </target>
   
