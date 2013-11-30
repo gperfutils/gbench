@@ -196,8 +196,9 @@ class BenchmarkBuilder {
             * Groovy: ${GroovySystem.version}
             * JVM: ${jvm('java.vm.name')} (${jvm('java.vm.version')}, ${jvm('java.vm.vendor')})
                 * JRE: ${jvm('java.version')}
-                * Total Memory: ${rt.totalMemory() / 1024 / 1024 + ' MB'}
-                * Maximum Memory: ${rt.maxMemory() / 1024 / 1024 + ' MB'}
+                * Total Number Of Processors: ${rt.availableProcessors()}
+                * Total Amount Of Memory: ${rt.totalMemory()/1024/1024} MB
+                * Maximum Amount Of Memory: ${rt.maxMemory()/1024/1024} MB
             * OS: ${jvm('os.name')} (${jvm('os.version')}, ${jvm('os.arch')})
         """.stripIndent())
     }
