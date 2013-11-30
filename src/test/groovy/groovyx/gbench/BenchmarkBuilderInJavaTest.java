@@ -47,10 +47,10 @@ public class BenchmarkBuilderInJavaTest {
         // groovy 1.8 requires casting the elements of a list because it ignores generic types
         result = (BenchmarkResult) results.get(0);
         assertEquals("take 100", result.getLabel());
-        assertEquals(100, (int) (result.getTime().getReal() / 1000 / 1000));
+        assertEquals(1, (int) (result.getTime().getReal() / 1000 / 1000 / 100));
 
         result = (BenchmarkResult) results.get(1);
         assertEquals("take 200", result.getLabel());
-        assertEquals(200, (int) (result.getTime().getReal() / 1000 / 1000));
+        assertEquals(2, (int) (result.getTime().getReal() / 1000 / 1000 / 100));
     }
 }
