@@ -19,7 +19,7 @@
   <!-- groovy 2.1 -->
   <property name="groovy.2.1.version.minor" value="9" />
   <!-- groovy 2.2 -->
-  <property name="groovy.2.2.version.minor" value="1" />
+  <property name="groovy.2.2.version.minor" value="2" />
 
   <!-- default groovy -->
   <property name="groovy.version.major" value="2.2" />
@@ -240,7 +240,7 @@
       </batchtest>
     </junit>
   </target>
-  
+
   <target name="test-all" description="Compile and run the test code for all the supported versions of Groovy.">
     <antcall target="test">
       <param name="groovy.version.major" value="1.8" />
@@ -259,8 +259,8 @@
       <param name="groovy.version.minor" value="${groovy.2.2.version.minor}" />
     </antcall>
   </target>
-  
-  <target name="deploy" depends="-init-maven-tasks,binary" 
+
+  <target name="deploy" depends="-init-maven-tasks,binary"
           description="Deploy snapshot version to Maven snapshot repository.">
     <property name="maven.artifact.version" value="${version}-groovy-${groovy.version.major}-SNAPSHOT" />
     <echo message="Deploying ${maven.artifact.version}..." />
@@ -268,10 +268,10 @@
     <property name="maven.artifact.prefix" value="${id}-${maven.artifact.version}" />
     <property name="maven.pom" value="${deploy.dir}/${maven.artifact.prefix}.pom" />
     <property name="maven.jar" value="${deploy.dir}/${maven.artifact.prefix}.jar" />
-    <copy file="pom.xml" tofile="${maven.pom}" />    
+    <copy file="pom.xml" tofile="${maven.pom}" />
     <replace file="${maven.pom}" token="@version@" value="${maven.artifact.version}" />
-    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar" tofile="${maven.jar}" />    
-    
+    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar" tofile="${maven.jar}" />
+
     <artifact:mvn>
       <arg value="org.apache.maven.plugins:maven-deploy-plugin:2.6:deploy-file" />
       <arg value="-Durl=${maven-snapshots-repository-url}" />
@@ -280,8 +280,8 @@
       <arg value="-Dfile=${maven.jar}" />
     </artifact:mvn>
   </target>
-  
-  <target name="deploy-all" 
+
+  <target name="deploy-all"
           description="Deploy snapshot versions for all the supported versions of Groovy to Maven snapshot repository.">
     <antcall target="deploy">
       <param name="groovy.version.major" value="1.8" />
@@ -301,7 +301,7 @@
     </antcall>
   </target>
 
-  <target name="stage-all" 
+  <target name="stage-all"
           description="Deploy release versions for all the supported versions of Groovy to Maven staging repository.">
     <antcall target="stage">
       <param name="groovy.version.major" value="1.8" />
@@ -320,8 +320,8 @@
       <param name="groovy.version.minor" value="${groovy.2.2.version.minor}" />
     </antcall>
   </target>
-  
-   <target name="stage" depends="-init-maven-tasks,binary,source,javadoc" 
+
+   <target name="stage" depends="-init-maven-tasks,binary,source,javadoc"
             description="Deploy release version to Maven staging repository">
     <property name="maven.artifact.version" value="${version}-groovy-${groovy.version.major}" />
     <echo message="Deploying ${maven.artifact.version}..." />
@@ -331,12 +331,12 @@
     <property name="maven.jar" value="${deploy.dir}/${maven.artifact.prefix}.jar" />
     <property name="maven.sources.jar" value="${deploy.dir}/${maven.artifact.prefix}-sources.jar" />
     <property name="maven.javadoc.jar" value="${deploy.dir}/${maven.artifact.prefix}-javadoc.jar" />
-    <copy file="pom.xml" tofile="${maven.pom}" />    
+    <copy file="pom.xml" tofile="${maven.pom}" />
     <replace file="${maven.pom}" token="@version@" value="${maven.artifact.version}" />
-    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar" tofile="${maven.jar}" />    
-    <copy file="${dist.dir}/${id}-${version}-sources.jar" tofile="${maven.sources.jar}" />    
-    <copy file="${dist.dir}/${id}-${version}-javadoc.jar" tofile="${maven.javadoc.jar}" />    
-     
+    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar" tofile="${maven.jar}" />
+    <copy file="${dist.dir}/${id}-${version}-sources.jar" tofile="${maven.sources.jar}" />
+    <copy file="${dist.dir}/${id}-${version}-javadoc.jar" tofile="${maven.javadoc.jar}" />
+
     <!-- sign and deploy the main artifact -->
     <artifact:mvn>
       <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
@@ -369,5 +369,5 @@
       <arg value="-Pgpg" />
     </artifact:mvn>
   </target>
-  
+
 </project>
