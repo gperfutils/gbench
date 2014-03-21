@@ -58,7 +58,7 @@
     </classpath>
   </taskdef>
 
-  <target name="-optimize">
+  <target name="-soot" if="soot.enabled">
     <path id="soot.classpath">
       <pathelement location="${java.home}/lib/rt.jar" />
       <path refid="compile.classpath" />
@@ -180,7 +180,17 @@
       </classpath>
     </groovyc>
 
-    <antcall target="-optimize" inheritRefs="true">
+    <groovy><![CDATA[
+      // soot 2.5.0 does not support java 8.
+      if (properties.'ant.java.version' < '1.8') {
+        properties.'soot.enabled' = true 
+      } else {
+        ant.echo(level:'warning', 
+                 message:"WARNING: Soot does not support Java " + properties.'ant.java.version' +
+                         ". Disable soot optimization.")
+      }
+    ]]></groovy>
+    <antcall target="-soot" inheritRefs="true">
     </antcall>
   </target>
 
