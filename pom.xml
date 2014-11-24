@@ -1,6 +1,6 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.googlecode.gbench</groupId>
+  <groupId>org.gperfutils</groupId>
   <artifactId>gbench</artifactId>
   <packaging>jar</packaging>
   <name>GBench</name>
