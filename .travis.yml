@@ -1,1 +1,3 @@
-script: "ant binary"
+script: "ant test-all"
+jdk:
+  - oraclejdk7
