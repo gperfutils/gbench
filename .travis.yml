@@ -1,1 +1,1 @@
-language: groovy
+script: "ant binary"
