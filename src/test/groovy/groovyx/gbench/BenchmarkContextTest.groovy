@@ -15,6 +15,7 @@
  */
 package groovyx.gbench
 
+import org.junit.After
 import org.junit.Test
 
 import java.lang.management.ManagementFactory
@@ -23,12 +24,18 @@ import java.util.concurrent.CountDownLatch
 class BenchmarkContextTest {
 
     void doTest(Map expected) {
-        CountDownLatch latch = new CountDownLatch(1)
+        def actual = [:]
         new Thread().start {
-            assert expected == BenchmarkContext.get()
-            latch.countDown()
+            // copy the thread-local context
+            actual.putAll(BenchmarkContext.get())
+        }.join()
+        assert expected == actual 
+    }
+    
+    @After void cleanSystemProperties() {
+        System.properties.keys().findAll{ it.startsWith("gbench.") }.each {
+            System.properties.remove(it)
         }
-        latch.await()
     }
 
     @Test void defaultValues() {
