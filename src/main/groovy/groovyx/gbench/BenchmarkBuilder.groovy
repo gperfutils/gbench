@@ -88,6 +88,9 @@ class BenchmarkBuilder {
         clos.resolveStrategy = Closure.DELEGATE_FIRST
         clos.delegate = this
         clos()
+        if (benchmarks.isEmpty()) {
+            with('', clos)
+        }
         return benchmarks
     }
 

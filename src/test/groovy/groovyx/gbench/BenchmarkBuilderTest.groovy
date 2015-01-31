@@ -41,36 +41,34 @@ class BenchmarkBuilderTest {
             assert verbose
         }
     }
-
-    @Test void testStandard() {
+    
+    @Test void testSingle() {
         def benchmarks = new BenchmarkBuilder().run {
             'foo' {
-                Thread.sleep(1000)
+                Thread.sleep(10)
             }
         }
         assert benchmarks.size() == 1
-        benchmarks.each { bm ->
-            assert bm.label == 'foo'
-            assert bm.time.real > 0
-            /* TODO fix a bug that system time is often negative and test fails.
-            if (ManagementFactory.threadMXBean.isCurrentThreadCpuTimeSupported()) {
-                assert bm.time.cpu > 0
-                assert bm.time.user > 0
-                assert bm.time.system > 0
-            }
-            */
-        }
-        benchmarks.prettyPrint()
+        assert benchmarks[0].label == 'foo'
+        assert benchmarks[0].time.real >= 10 * 1000 * 1000
     }
 
+    @Test void testSingleUnlabeled() {
+        def benchmarks = new BenchmarkBuilder().run {
+            Thread.sleep(10)
+        }
+        assert benchmarks.size() == 1
+        assert benchmarks[0].label == ''
+        assert benchmarks[0].time.real >= 10 * 1000 * 1000
+    }
+    
     @Test void testMultiple() {
-        def benchmarker = new BenchmarkBuilder()
-        def benchmarks = benchmarker.run {
+        def benchmarks = new BenchmarkBuilder().run {
             foo {
-                Thread.sleep(100)
+                Thread.sleep(20)
             }
             bar {
-                Thread.sleep(50)
+                Thread.sleep(10)
             }
         }
         assert benchmarks.size() == 2
