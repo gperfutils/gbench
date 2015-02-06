@@ -12,18 +12,18 @@
   <property name="dist.dir" value="dist" />
   <property name="install.dir" value="install" />
 
-  <!-- groovy 1.7 -->
-  <property name="groovy.1.7.version.minor" value="11" />
-  <!-- groovy 1.8 -->
-  <property name="groovy.1.8.version.minor" value="9" />
-  <!-- groovy 2.0 -->
-  <property name="groovy.2.0.version.minor" value="7" />
-  <!-- groovy 2.1 -->
-  <property name="groovy.2.1.version.minor" value="1" />
+  <!-- groovy versions -->
+  <property name="groovy.version.1.7" value="1.7.11" />
+  <property name="groovy.version.1.8" value="1.8.9" />
+  <property name="groovy.version.2.0" value="2.0.8" />
+  <property name="groovy.version.2.1" value="2.1.9" />
+  <property name="groovy.version.2.2" value="2.2.2" />
+  <property name="groovy.version.2.3" value="2.3.9" />
+  <property name="groovy.version.2.4" value="2.4.0" />
 
-  <!-- default groovy -->
-  <property name="groovy.version.major" value="2.1" />
-  <property name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
+  <!-- default groovy version -->
+  <property name="groovy.version.short" value="2.4" />
+  <property name="groovy.version" value="${groovy.version.2.4}" />
 
   <!-- preprocessor (see: http://prebop.sourceforge.net/) -->
   <taskdef name="preprocess" classname="com.objfac.prebop.ant.PreprocessorTask">
@@ -34,7 +34,7 @@
 
   <target name="-preprocess">
     <preprocess indir="${pp.src.dir}" outdir="${pp.dst.dir}" out="replace">
-      <var name="version" value="${groovy.version.major}.${groovy.version.minor}"/>
+      <var name="version" value="${groovy.version}"/>
       <filetype commentend="*/" commentbegin="/*" extensions="groovy"/>
     </preprocess>
   </target>
@@ -96,7 +96,7 @@
 
   <target name="javadoc" description="Create the javadoc archive." depends="-init-maven-tasks">
     <artifact:dependencies pathId="groovydoc.classpath">
-      <dependency groupId="org.codehaus.groovy" artifactId="groovy-all" version="${groovy.version.major}.${groovy.version.minor}" />
+      <dependency groupId="org.codehaus.groovy" artifactId="groovy-all" version="${groovy.version}" />
     </artifact:dependencies>
     <taskdef name="groovydoc" classname="org.codehaus.groovy.ant.Groovydoc" classpathref="groovydoc.classpath" />
     <groovydoc destdir="${build.dir}/doc" sourcepath="${src.main.dir}" packagenames="**.*" use="true" private="false">
@@ -111,31 +111,43 @@
 
   <target name="binary-all" description="Create the binary archives for all the supported versions of Groovy.">
     <antcall target="binary">
-      <param name="groovy.version.major" value="1.7" />
-      <param name="groovy.version.minor" value="${groovy.1.7.version.minor}" />
+      <param name="groovy.version.short" value="1.7" />
+      <param name="groovy.version" value="${groovy.version.1.7}" />
     </antcall>
     <antcall target="binary">
-      <param name="groovy.version.major" value="1.8" />
-      <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+      <param name="groovy.version.short" value="1.8" />
+      <param name="groovy.version" value="${groovy.version.1.8}" />
     </antcall>
     <antcall target="binary">
-      <param name="groovy.version.major" value="2.0" />
-      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+      <param name="groovy.version.short" value="2.0" />
+      <param name="groovy.version" value="${groovy.version.2.0}" />
     </antcall>
     <antcall target="binary">
-      <param name="groovy.version.major" value="2.1" />
-      <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
+      <param name="groovy.version.short" value="2.1" />
+      <param name="groovy.version" value="${groovy.version.2.1}" />
+    </antcall>
+    <antcall target="binary">
+      <param name="groovy.version.short" value="2.2" />
+      <param name="groovy.version" value="${groovy.version.2.2}" />
+    </antcall>
+    <antcall target="binary">
+      <param name="groovy.version.short" value="2.3" />
+      <param name="groovy.version" value="${groovy.version.2.3}" />
+    </antcall>
+    <antcall target="binary">
+      <param name="groovy.version.short" value="2.4" />
+      <param name="groovy.version" value="${groovy.version.2.4}" />
     </antcall>
   </target>
 
   <target name="binary" depends="test" description="Create the binary archive.">
-    <jar destfile="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar">
+    <jar destfile="${dist.dir}/${id}-${version}-groovy-${groovy.version.short}.jar">
       <fileset dir="${classes.main.dir}" />
       <manifest>
         <attribute name="Built-By" value="${vendor}" />
         <attribute name="Implementation-Vendor" value="${vendor}" />
         <attribute name="Implementation-Title" value="${ant.project.name}" />
-        <attribute name="Implementation-Version" value="${version}-groovy-${groovy.version.major}" />
+        <attribute name="Implementation-Version" value="${version}-groovy-${groovy.version.short}" />
       </manifest>
     </jar>
   </target>
@@ -148,10 +160,10 @@
       <param name="pp.dst.dir" value="${build.src.main.dir}" />
     </antcall>
 
-    <property name="groovy.version" value="${groovy.version.major}.${groovy.version.minor}" />
+    <property name="groovy.version" value="${groovy.version}" />
     <echo message="Compiling the main code with Groovy ${groovy.version}..." />
 
-    <property name="classes.main.dir" value="${build.dir}/${groovy.version.major}/main/classes" />
+    <property name="classes.main.dir" value="${build.dir}/${groovy.version.short}/main/classes" />
     <mkdir dir="${classes.main.dir}" />
 
     <artifact:dependencies pathId="compile.classpath">
@@ -165,7 +177,7 @@
 
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="compile.classpath" />
     <groovyc srcdir="${build.src.main.dir}/groovy" destdir="${classes.main.dir}" classpathref="compile.classpath">
-      <javac source="1.5" target="1.5" debug="on" />
+      <javac source="1.7" target="1.7" debug="on" />
       <classpath>
         <pathelement path="${classes.main.dir}" />
       </classpath>
@@ -176,7 +188,6 @@
   </target>
 
   <target name="compile-test" description="Compile the test code." depends="compile">
-    <property name="groovy.version" value="${groovy.version.major}.${groovy.version.minor}" />
     <echo message="Compiling the test code with Groovy ${groovy.version}..." />
 
     <property name="build.src.test.dir" value="${build.dir}/src/test" />
@@ -192,11 +203,11 @@
       <dependency groupId="commons-cli" artifactId="commons-cli" version="1.2" />
     </artifact:dependencies>
 
-    <property name="classes.test.dir" value="${build.dir}/${groovy.version.major}/test/classes" />
+    <property name="classes.test.dir" value="${build.dir}/${groovy.version.short}/test/classes" />
     <mkdir dir="${classes.test.dir}" />
 
     <groovyc srcdir="${build.src.test.dir}/groovy" destdir="${classes.test.dir}" classpathref="compile.classpath">
-      <javac source="1.5" target="1.5" debug="on" />
+      <javac source="1.7" target="1.7" debug="on" />
       <classpath>
         <pathelement path="${classes.main.dir}" />
         <pathelement path="${classes.test.dir}" />
@@ -205,7 +216,7 @@
   </target>
 
   <target name="test" description="Compile and run the test code." depends="compile-test">
-    <junit haltonfailure="on">
+    <junit haltonfailure="on" fork="yes">
       <classpath>
         <path refid="compile.classpath" />
         <pathelement path="${classes.main.dir}" />
@@ -222,26 +233,38 @@
   
   <target name="test-all" description="Compile and run the test code for all the supported versions of Groovy.">
     <antcall target="test">
-      <param name="groovy.version.major" value="1.7" />
-      <param name="groovy.version.minor" value="${groovy.1.7.version.minor}" />
+      <param name="groovy.version.short" value="1.7" />
+      <param name="groovy.version" value="${groovy.version.1.7}" />
     </antcall>
     <antcall target="test">
-      <param name="groovy.version.major" value="1.8" />
-      <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+      <param name="groovy.version.short" value="1.8" />
+      <param name="groovy.version" value="${groovy.version.1.8}" />
     </antcall>
     <antcall target="test">
-      <param name="groovy.version.major" value="2.0" />
-      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+      <param name="groovy.version.short" value="2.0" />
+      <param name="groovy.version" value="${groovy.version.2.0}" />
     </antcall>
     <antcall target="test">
-      <param name="groovy.version.major" value="2.1" />
-      <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
+      <param name="groovy.version.short" value="2.1" />
+      <param name="groovy.version" value="${groovy.version.2.1}" />
+    </antcall>
+    <antcall target="test">
+      <param name="groovy.version.short" value="2.2" />
+      <param name="groovy.version" value="${groovy.version.2.2}" />
+    </antcall>
+    <antcall target="test">
+      <param name="groovy.version.short" value="2.3" />
+      <param name="groovy.version" value="${groovy.version.2.3}" />
+    </antcall>
+    <antcall target="test">
+      <param name="groovy.version.short" value="2.4" />
+      <param name="groovy.version" value="${groovy.version.2.4}" />
     </antcall>
   </target>
   
   <target name="deploy" depends="-init-maven-tasks,binary" 
           description="Deploy snapshot version to Maven snapshot repository.">
-    <property name="maven.artifact.version" value="${version}-groovy-${groovy.version.major}-SNAPSHOT" />
+    <property name="maven.artifact.version" value="${version}-groovy-${groovy.version.short}-SNAPSHOT" />
     <echo message="Deploying ${maven.artifact.version}..." />
     <property name="deploy.dir" value="${dist.dir}" />
     <property name="maven.artifact.prefix" value="${id}-${maven.artifact.version}" />
@@ -249,7 +272,7 @@
     <property name="maven.jar" value="${deploy.dir}/${maven.artifact.prefix}.jar" />
     <copy file="pom.xml" tofile="${maven.pom}" />    
     <replace file="${maven.pom}" token="@version@" value="${maven.artifact.version}" />
-    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar" tofile="${maven.jar}" />    
+    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.short}.jar" tofile="${maven.jar}" />    
     
     <artifact:mvn>
       <arg value="org.apache.maven.plugins:maven-deploy-plugin:2.6:deploy-file" />
@@ -263,46 +286,70 @@
   <target name="deploy-all" 
           description="Deploy snapshot versions for all the supported versions of Groovy to Maven snapshot repository.">
     <antcall target="deploy">
-      <param name="groovy.version.major" value="1.7" />
-      <param name="groovy.version.minor" value="${groovy.1.7.version.minor}" />
+      <param name="groovy.version.short" value="1.7" />
+      <param name="groovy.version" value="${groovy.version.1.7}" />
     </antcall>
     <antcall target="deploy">
-      <param name="groovy.version.major" value="1.8" />
-      <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+      <param name="groovy.version.short" value="1.8" />
+      <param name="groovy.version" value="${groovy.version.1.8}" />
     </antcall>
     <antcall target="deploy">
-      <param name="groovy.version.major" value="2.0" />
-      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+      <param name="groovy.version.short" value="2.0" />
+      <param name="groovy.version" value="${groovy.version.2.0}" />
     </antcall>
     <antcall target="deploy">
-      <param name="groovy.version.major" value="2.1" />
-      <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
+      <param name="groovy.version.short" value="2.1" />
+      <param name="groovy.version" value="${groovy.version.2.1}" />
+    </antcall>
+    <antcall target="deploy">
+      <param name="groovy.version.short" value="2.2" />
+      <param name="groovy.version" value="${groovy.version.2.2}" />
+    </antcall>
+    <antcall target="deploy">
+      <param name="groovy.version.short" value="2.3" />
+      <param name="groovy.version" value="${groovy.version.2.3}" />
+    </antcall>
+    <antcall target="deploy">
+      <param name="groovy.version.short" value="2.4" />
+      <param name="groovy.version" value="${groovy.version.2.4}" />
     </antcall>
   </target>
 
   <target name="stage-all" 
           description="Deploy release versions for all the supported versions of Groovy to Maven staging repository.">
     <antcall target="stage">
-      <param name="groovy.version.major" value="1.7" />
-      <param name="groovy.version.minor" value="${groovy.1.7.version.minor}" />
+      <param name="groovy.version.short" value="1.7" />
+      <param name="groovy.version" value="${groovy.version.1.7}" />
     </antcall>
     <antcall target="stage">
-      <param name="groovy.version.major" value="1.8" />
-      <param name="groovy.version.minor" value="${groovy.1.8.version.minor}" />
+      <param name="groovy.version.short" value="1.8" />
+      <param name="groovy.version" value="${groovy.version.1.8}" />
     </antcall>
     <antcall target="stage">
-      <param name="groovy.version.major" value="2.0" />
-      <param name="groovy.version.minor" value="${groovy.2.0.version.minor}" />
+      <param name="groovy.version.short" value="2.0" />
+      <param name="groovy.version" value="${groovy.version.2.0}" />
     </antcall>
     <antcall target="stage">
-      <param name="groovy.version.major" value="2.1" />
-      <param name="groovy.version.minor" value="${groovy.2.1.version.minor}" />
+      <param name="groovy.version.short" value="2.1" />
+      <param name="groovy.version" value="${groovy.version.2.1}" />
+    </antcall>
+    <antcall target="stage">
+      <param name="groovy.version.short" value="2.2" />
+      <param name="groovy.version" value="${groovy.version.2.2}" />
+    </antcall>
+    <antcall target="stage">
+      <param name="groovy.version.short" value="2.3" />
+      <param name="groovy.version" value="${groovy.version.2.3}" />
+    </antcall>
+    <antcall target="stage">
+      <param name="groovy.version.short" value="2.4" />
+      <param name="groovy.version" value="${groovy.version.2.4}" />
     </antcall>
   </target>
   
    <target name="stage" depends="-init-maven-tasks,binary,source,javadoc" 
             description="Deploy release version to Maven staging repository">
-    <property name="maven.artifact.version" value="${version}-groovy-${groovy.version.major}" />
+    <property name="maven.artifact.version" value="${version}-groovy-${groovy.version.short}" />
     <echo message="Deploying ${maven.artifact.version}..." />
     <property name="deploy.dir" value="${dist.dir}" />
     <property name="maven.artifact.prefix" value="${id}-${maven.artifact.version}" />
@@ -312,7 +359,7 @@
     <property name="maven.javadoc.jar" value="${deploy.dir}/${maven.artifact.prefix}-javadoc.jar" />
     <copy file="pom.xml" tofile="${maven.pom}" />    
     <replace file="${maven.pom}" token="@version@" value="${maven.artifact.version}" />
-    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.jar" tofile="${maven.jar}" />    
+    <copy file="${dist.dir}/${id}-${version}-groovy-${groovy.version.short}.jar" tofile="${maven.jar}" />    
     <copy file="${dist.dir}/${id}-${version}-sources.jar" tofile="${maven.sources.jar}" />    
     <copy file="${dist.dir}/${id}-${version}-javadoc.jar" tofile="${maven.javadoc.jar}" />    
      

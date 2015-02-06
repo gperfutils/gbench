@@ -12,38 +12,44 @@ import static org.junit.Assert.*
 class BenchmarkBuilderTest {
 
     @Test void testDefaultOptions() {
-        def latch = new CountDownLatch(1)
-        // start a new thread because the context might be dirty
+        def expected = [
+            warmUpTime: BenchmarkSystem.warmUpTime,
+            maxWarmUpTime: BenchmarkSystem.maxWarmUpTime,
+            measureCpuTime: BenchmarkSystem.measureCpuTime,
+            quiet: BenchmarkSystem.quiet,
+            verbose: BenchmarkSystem.verbose ]
+        def actual = [:]
         new Thread().start {
             def bb = new BenchmarkBuilder()
             bb.options = [:]
-            BenchmarkContext.get().with {
-                assert BenchmarkSystem.warmUpTime == warmUpTime
-                assert BenchmarkSystem.maxWarmUpTime == maxWarmUpTime
-                assert BenchmarkSystem.measureCpuTime == measureCpuTime
-                assert BenchmarkSystem.quiet == quiet
-                assert BenchmarkSystem.verbose == verbose
-            }
-            latch.countDown()
-        }
-        latch.await()
+            actual.putAll(BenchmarkContext.get().findAll { expected.containsKey(it.key) })
+        }.join()
+        assert expected == actual
     }
 
     @Test void testOptions() {
-        def bb = new BenchmarkBuilder()
-        bb.options = [ warmUpTime: 1, maxWarmUpTime: 2, measureCpuTime: false,
-            quiet: true, verbose: true ]
-        BenchmarkContext.get().with {
-            assert 1 == warmUpTime
-            assert 2 == maxWarmUpTime
-            assert !measureCpuTime
-            assert quiet
-            assert verbose
-        }
+        def expected = [ 
+            warmUpTime: 1,
+            maxWarmUpTime: 2,
+            measureCpuTime: false,
+            quiet: true,
+            verbose: true ]
+        def actual = [:]
+        new Thread().start {
+            def bb = new BenchmarkBuilder()
+            bb.options = [
+                warmUpTime: 1,
+                maxWarmUpTime: 2,
+                measureCpuTime: false,
+                quiet: true,
+                verbose: true ]
+            actual.putAll(BenchmarkContext.get().findAll { expected.containsKey(it.key) })
+        }.join()
+        assert expected == actual
     }
     
     @Test void testSingle() {
-        def benchmarks = new BenchmarkBuilder().run {
+        def benchmarks = new BenchmarkBuilder().run(quiet: true) {
             'foo' {
                 Thread.sleep(10)
             }
@@ -54,7 +60,7 @@ class BenchmarkBuilderTest {
     }
 
     @Test void testSingleUnlabeled() {
-        def benchmarks = new BenchmarkBuilder().run {
+        def benchmarks = new BenchmarkBuilder().run(quiet: true) {
             Thread.sleep(10)
         }
         assert benchmarks.size() == 1
@@ -63,7 +69,7 @@ class BenchmarkBuilderTest {
     }
     
     @Test void testMultiple() {
-        def benchmarks = new BenchmarkBuilder().run {
+        def benchmarks = new BenchmarkBuilder().run(quiet: true) {
             foo {
                 Thread.sleep(20)
             }
@@ -97,6 +103,6 @@ class BenchmarkBuilderTest {
        pw.println('bar   450     250  700   701')
        pw.flush()
 
-       assertEquals(sw.toString(), benchmarker.toString())
+       assert sw.toString() == benchmarker.toString()
     }
 }
