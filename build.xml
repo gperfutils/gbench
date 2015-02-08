@@ -22,11 +22,12 @@
   <property name="groovy.24" value="2.4.0" />
   <property name="groovy.latest" value="${groovy.24}" />
   <property name="groovy.version" value="${groovy.latest}" />
-
   <property name="regex.groovy.version" value="^(.+)\.(.+)\.(.+)$$"/> 
-  <!--<property name="groovy.version.major" value="" />-->
-  <!--<property name="groovy.version.minor" value="" />-->
-  <!--<property name="groovy.version.patch" value="" />-->
+
+  <!-- javac options -->
+  <property name="javac.source" value="1.5" />
+  <property name="javac.target" value="1.5" />
+
 
   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
     <classpath>
@@ -55,7 +56,17 @@
     </classpath>
   </taskdef>
 
-  <target name="-optimize">
+  <target name="-soot-before" unless="skip.soot">
+    <if>
+      <not><matches pattern="1\.[5-7]" string="${ant.java.version}" /></not>
+      <then>
+        <echo level="warning" message="Skip soot optimization. Soot does not support ${ant.java.version}." />
+        <property name="skip.soot" value="true" />
+      </then>
+    </if>
+  </target>
+
+  <target name="-soot" depends="-soot-before" unless="skip.soot">
     <path id="soot.classpath">
       <pathelement location="${java.home}/lib/rt.jar" />
       <path refid="compile.classpath" />
@@ -65,6 +76,9 @@
     <soot process_dir="${classes.main.dir}" output_dir="${classes.main.dir}"
       soot_classpath="${soot.classpath.s}"
       optimize="true"/>
+  </target>
+
+  <target name="-optimize" depends="-soot">
   </target>
 
   <!-- maven ant tasks -->
@@ -148,7 +162,7 @@
 
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="compile.classpath" />
     <groovyc srcdir="${build.src.main.dir}/groovy" destdir="${classes.main.dir}" classpathref="compile.classpath">
-      <javac source="1.7" target="1.7" debug="on" />
+      <javac source="${javac.source}" target="${javac.target}" debug="on" />
       <classpath>
         <pathelement path="${classes.main.dir}" />
       </classpath>
@@ -178,7 +192,7 @@
     <mkdir dir="${classes.test.dir}" />
 
     <groovyc srcdir="${build.src.test.dir}/groovy" destdir="${classes.test.dir}" classpathref="compile.classpath">
-      <javac source="1.7" target="1.7" debug="on" />
+      <javac source="${javac.source}" target="${javac.target}" debug="on" />
       <classpath>
         <pathelement path="${classes.main.dir}" />
         <pathelement path="${classes.test.dir}" />
@@ -186,7 +200,7 @@
     </groovyc>
   </target>
 
-  <target name="test" description="Compile and run the test code." depends="compile-test">
+  <target name="test" description="Compile and run the test code." depends="compile-test" unless="skip.test">
     <junit haltonfailure="on" fork="yes">
       <classpath>
         <path refid="compile.classpath" />
@@ -212,12 +226,7 @@
     <antcall target="test"><param name="groovy.version" value="${groovy.24}"/></antcall>
   </target>
 
-  <target name="binary" depends="-init,compile" description="Create the binary archive.">
-    <if>
-      <equals arg1="${skip.tests}" arg2="true" />
-      <then><echo message="Skip tests" /></then>
-      <else><antcall target="test" /></else>
-    </if>
+  <target name="binary" depends="compile,test" description="Create the binary archive.">
     <jar destfile="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.${groovy.version.minor}.jar">
       <fileset dir="${classes.main.dir}" />
       <manifest>
@@ -239,7 +248,7 @@
     <antcall target="binary"><param name="groovy.version" value="${groovy.24}"/></antcall>
   </target>
   
-  <target name="deploy" depends="-init,binary" 
+  <target name="deploy" depends="binary" 
           description="Deploy snapshot version to Maven snapshot repository.">
     <property name="maven.artifact.version" value="${version}-groovy-${groovy.version.major}.${groovy.version.minor}-SNAPSHOT" />
     <echo message="Deploying ${maven.artifact.version}..." />
