@@ -172,7 +172,7 @@
     </antcall>
   </target>
 
-  <target name="compile-test" description="Compile the test code." depends="compile">
+  <target name="compile-test" description="Compile the test code." depends="compile" unless="skip.test">
     <echo message="Compiling the test code with Groovy ${groovy.version}..." />
 
     <property name="build.src.test.dir" value="${build.dir}/src/test" />
@@ -226,7 +226,7 @@
     <antcall target="test"><param name="groovy.version" value="${groovy.24}"/></antcall>
   </target>
 
-  <target name="binary" depends="compile,test" description="Create the binary archive.">
+  <target name="binary" depends="test" description="Create the binary archive.">
     <jar destfile="${dist.dir}/${id}-${version}-groovy-${groovy.version.major}.${groovy.version.minor}.jar">
       <fileset dir="${classes.main.dir}" />
       <manifest>
